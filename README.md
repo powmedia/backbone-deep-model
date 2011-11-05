@@ -3,7 +3,9 @@ backbone-deep-model
 
 Improved support for models with nested attributes.
 
-Allows you to get and set nested attributes with path syntax, e.g. `user.type`
+Allows you to get and set nested attributes with path syntax, e.g. `user.type`.
+
+Triggers change events for changes on nested attributes.
 
 Usage
 =====
