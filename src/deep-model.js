@@ -2,7 +2,7 @@
  * Improves Backbone Model support when nested attributes are used.
  * get() and set() can take paths e.g. 'user.name'
  */
-;(function() {
+;(function(Backbone) {
 
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
@@ -148,4 +148,4 @@
     //Exports
     Backbone.DeepModel = DeepModel;
     
-})();
+})(Backbone);
