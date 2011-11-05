@@ -159,4 +159,28 @@ test("set: Triggers model change:[attribute] events", function() {
         ok(triggered1);
         ok(triggered2);
     })();
+    
+    
+    //Check only expected change events are running
+    (function() {
+        var model = create();
+    
+        var triggeredEvents = [];
+    
+        model.bind('all', function(changedAttr, model, val) {
+            triggeredEvents.push(changedAttr);
+        });
+    
+        model.set({
+            'id': 456,
+            'user.name.first': 'Lana'
+        });
+    
+        //Check callbacks ran
+        deepEqual(triggeredEvents, [
+            'change:id',
+            'change:user.name.first',
+            'change'
+        ]);
+    })();
 });
