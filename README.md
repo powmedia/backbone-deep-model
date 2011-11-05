@@ -30,9 +30,7 @@ Example code:
     
     //You can bind to change events on nested attributes
     model.bind('change:user.name.first', function(model, val) {
-        equal(val, 'Lana');
-    
-        triggered1 = true;
+        console.log(val);
     });
     
     //Use set with a path name for nested attributes
