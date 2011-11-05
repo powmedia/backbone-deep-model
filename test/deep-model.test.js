@@ -184,3 +184,11 @@ test("set: Triggers model change:[attribute] events", function() {
         ]);
     })();
 });
+
+test("set: Don't convert Date objects to strings", function() {
+    var model = create();
+    
+    model.set({ date: new Date });
+    
+    ok(_.isDate(model.attributes.date));
+});
