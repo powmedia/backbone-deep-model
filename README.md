@@ -10,6 +10,8 @@ Triggers change events for changes on nested attributes.
 Usage
 =====
 
+To install, include the `src/backbone-deep-model.js` file in your HTML page, after Backbone and it's dependencies.
+
     //Created models with nested attributes
     var model = new Backbone.DeepModel({
         id: 123,
