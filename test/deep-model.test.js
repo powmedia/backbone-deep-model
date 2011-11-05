@@ -1,4 +1,4 @@
-module("Model2");
+module("DeepModel");
 
 function create() {
     var model = new Backbone.DeepModel({
