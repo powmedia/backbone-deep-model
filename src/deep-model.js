@@ -140,6 +140,51 @@
             if (!alreadyChanging && !options.silent && this._changed) this.change(options);
             this._changing = false;
             return this;
+        },
+
+        // Remove an attribute from the model, firing `"change"` unless you choose
+        // to silence it. `unset` is a noop if the attribute doesn't exist.
+
+        unset : function(attr, options) {
+          //if (!(attr in this.attributes)) return this;
+          // New code to check if attribute exists
+          if (getNested(this.attributes, attr) === undefined) return this;
+          options || (options = {});
+
+          //var value = this.attributes[attr]; //Why is this needed?
+
+          // Run validation.
+          var validObj = {};
+          validObj[attr] = void 0;
+          if (!options.silent && this.validate && !this._performValidation(validObj, options)) return false;
+
+          // changedAttributes needs to know if an attribute has been unset.
+          (this._unsetAttributes || (this._unsetAttributes = [])).push(attr);
+
+          // Remove the attribute.
+
+          //Test if path
+          var path = attr.split('.')
+          if(path.length === 1){
+            delete this.attributes[attr];
+            delete this._escapedAttributes[attr];
+            if (attr == this.idAttribute) delete this.id;
+          } else {
+            //Get parent
+            var deep_property = path[path.length -1];
+            var parent = (path.slice(0,(path.length-1))).join('.')
+            var parent_value = getNested(this.attributes, parent);
+            var escaped_value = getNested(this._escapedAttributes, parent);
+            delete parent_value[deep_property];
+            delete escaped_value[deep_property];
+          }
+          this._changed = true;
+          if (!options.silent) {
+            this.trigger('change:' + attr, this, void 0, options);
+            this.change(options);
+          }
+
+          return this;
         }
 
     });

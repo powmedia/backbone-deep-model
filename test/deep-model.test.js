@@ -192,3 +192,126 @@ test("set: Don't convert Date objects to strings", function() {
     
     ok(_.isDate(model.attributes.date));
 });
+
+test("unset: Unset a root key", function(){
+    var model = create();
+
+    model.unset('user');
+
+    equal(model.get('user'), undefined);
+
+    deepEqual(model.toJSON(), {
+        id: 123
+        });
+
+
+
+});
+
+test("unset: Unset a deep key", function(){
+    var model = create();
+
+    model.unset('user.type');
+
+    deepEqual(model.get('user'), {
+            name: {
+                first: 'Sterling',
+                last: 'Archer'
+            }
+        });
+
+    deepEqual(model.toJSON(), {
+        id: 123,
+        user: {
+            name: {
+                first: 'Sterling',
+                last: 'Archer'
+            }
+        }
+    });
+
+});
+
+test("unset: Unset a deeper key", function(){
+    var model = create();
+
+    model.unset('user.name.last');
+
+    deepEqual(model.get('user'), {
+            type: 'Spy',
+            name: {
+                first: 'Sterling'
+            }
+        });
+
+    deepEqual(model.toJSON(), {
+        id: 123,
+        user: {
+            type: 'Spy',
+            name: {
+                first: 'Sterling'
+            }
+        }
+    });
+
+});
+
+test("unset: Triggers model change:[attribute] events", function() {
+    (function() {
+        var model = create();
+
+        var triggered = false;
+
+        model.bind('change:id', function(model, val) {
+            equal(val, void 0);
+            triggered = true;
+        });
+
+        model.unset('id');
+
+        //Check callbacks ran
+        ok(triggered);
+    })();
+
+
+    (function() {
+        var model = create();
+
+        var triggered1 = false;
+
+        model.bind('change:user.name.first', function(model, val) {
+            equal(val, void 0);
+
+            triggered1 = true;
+        });
+
+        model.unset('user.name.first');
+
+        //Check callbacks ran
+        ok(triggered1);
+    })();
+
+
+    //Check only expected change events are running
+    (function() {
+        var model = create();
+
+        var triggeredEvents = [];
+
+        model.bind('all', function(changedAttr, model, val) {
+            triggeredEvents.push(changedAttr);
+        });
+
+        model.unset('id');
+        model.unset('user.name.first');
+
+        //Check callbacks ran
+        deepEqual(triggeredEvents, [
+            'change:id',
+            'change',
+            'change:user.name.first',
+            'change'
+        ]);
+    })();
+});
+
