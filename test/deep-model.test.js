@@ -193,6 +193,24 @@ test("set: Don't convert Date objects to strings", function() {
     ok(_.isDate(model.attributes.date));
 });
 
+test("has: Check if model has root key", function(){
+	var model = create();
+
+	equal(model.has('user'), true);
+});
+
+test("has: Check if model has deep key", function(){
+	var model = create();
+
+	equal(model.has('user.name.last'), true);
+});
+
+test("has: Don't find nonexistent key", function(){
+	var model = create();
+
+	equal(model.has('user.turtleneck'), false);
+});
+
 test("unset: Unset a root key", function(){
     var model = create();
 
