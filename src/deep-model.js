@@ -142,6 +142,11 @@
             return this;
         },
 
+        // Override has
+        has: function(attr) {
+            return getNested(this.attributes, attr) != null;
+        },
+
         // Remove an attribute from the model, firing `"change"` unless you choose
         // to silence it. `unset` is a noop if the attribute doesn't exist.
 
