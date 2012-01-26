@@ -17,7 +17,7 @@
         for (var key in obj) {
             var val = obj[key];
 
-            if (val.constructor === Object) {
+            if (val && val.constructor === Object) {
                 //Recursion for embedded objects
                 var obj2 = objToPaths(val);
 
@@ -114,7 +114,7 @@
                 for (var attr in attrs) {
                     var val = attrs[attr];
 
-                    if (val.constructor === Object) {
+                    if (val && val.constructor === Object) {
                         //Recursion for nested objects
                         performSet(val);
                     } else {
