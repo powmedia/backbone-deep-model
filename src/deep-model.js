@@ -93,6 +93,7 @@
             options || (options = {});
             if (!attrs) return this;
             if (attrs.attributes) attrs = attrs.attributes;
+            if (options.unset) for (attr in attrs) attrs[attr] = void 0;
             var now = this.attributes, escaped = this._escapedAttributes;
 
             // Run validation.
