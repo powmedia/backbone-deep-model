@@ -131,15 +131,13 @@
                         //Recursion for nested objects
                         performSet(val);
                     } else {
-                        if (!_.isEqual(getNested(now, attr), val)) {
-                            setNested(now, attr, val);
-                            //deleteNested(escaped, attr); //TODO: Create this and use instead of setNested line below?
-                            setNested(escaped, attr, undefined);
+                        setNested(now, attr, val);
+                        //deleteNested(escaped, attr); //TODO: Create this and use instead of setNested line below?
+                        setNested(escaped, attr, undefined);
 
-                            // This needs to be set for things like changedAttributes() to work
-                            self._changed[attr] = val;
-                            if (!options.silent) self.trigger('change:' + attr, self, val, options);
-                        }
+                        // This needs to be set for things like changedAttributes() to work
+                        self._changed[attr] = val;
+                        if (!options.silent) self.trigger('change:' + attr, self, val, options);
                     }
                 }
             }
