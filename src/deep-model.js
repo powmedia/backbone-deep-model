@@ -131,7 +131,11 @@
                         //Recursion for nested objects
                         performSet(val);
                     } else {
-                        if (_.isObject(val) || !_.isEqual(getNested(now, attr), val)) {
+                        // It seems like this check for undefined is handled more elegantly in the parent
+                        // but i'm just not seeing it. This was added to satisfy a backbone unit test that
+                        // requires setting an undefined attribute to fire change events.
+                        if ((getNested(now, attr) === undefined) ||
+                            _.isObject(val) || !_.isEqual(getNested(now, attr), val)) {
                             setNested(now, attr, val);
                             //deleteNested(escaped, attr); //TODO: Create this and use instead of setNested line below?
                             setNested(escaped, attr, undefined);
