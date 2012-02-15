@@ -88,7 +88,18 @@
 
         // Override set
         // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
-        set: function(attrs, options) {
+        set: function(key, value, options) {
+            var attrs, attr;
+
+            if (_.isObject(key) || key == null) {
+                attrs = key;
+                options = value;
+            } else {
+                attrs = {};
+                attrs[key] = value;
+            }
+
+
             // Extract attributes and options.
             options || (options = {});
             if (!attrs) return this;
