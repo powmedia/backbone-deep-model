@@ -137,8 +137,6 @@
                             setNested(escaped, attr, undefined);
 
                             // This needs to be set for things like changedAttributes() to work
-                            // but this.change() will also trigger all of these change events
-                            // with potentially invalid values. 
                             self._changed[attr] = val;
                             if (!options.silent) self.trigger('change:' + attr, self, val, options);
                         }
@@ -157,13 +155,17 @@
             // Fire the `"change"` event, if the model has been changed.
             if (!alreadyChanging && !options.silent && this._changed)
             {
-                var changed = _.clone(this._changed);
-                // This will cause the 'change' event to fire without sending each of
-                // the "change:attribute" a second time with invalid values
-                this._changed = {null: null};
+                // the change:attribute events have allready been fired. This will prevent them from being sent again.
+                var backupTrigger = this.trigger
+                var self = this;
+                this.trigger = function(evt){
+                    if (evt == 'change')
+                    {
+                        backupTrigger.apply(self, arguments)
+                    }
+                }
                 this.change(options);
-                // This has to be restored for things like changedAttributes() to work.
-                this._changed = changed;
+                this.trigger = backupTrigger;
             }
             return this;
         },
