@@ -108,7 +108,7 @@
             var now = this.attributes, escaped = this._escapedAttributes;
 
             // Run validation.
-            if (!options.silent && this.validate && !this._performValidation(attrs, options)) return false;
+            if (!this._validate(attrs, options)) return false;
 
             // Check for changes of `id`.
             if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
@@ -173,7 +173,7 @@
           // Run validation.
           var validObj = {};
           validObj[attr] = void 0;
-          if (!options.silent && this.validate && !this._performValidation(validObj, options)) return false;
+          if (!this._validate(attrs, options)) return false;
 
           // changedAttributes needs to know if an attribute has been unset.
           (this._unsetAttributes || (this._unsetAttributes = [])).push(attr);
