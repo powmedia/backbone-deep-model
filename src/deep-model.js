@@ -153,6 +153,7 @@
             //END CUSTOM CODE
 
 
+            this._changing = false;
             // Fire the `"change"` event, if the model has been changed.
             if (!alreadyChanging && !options.silent && this._changed)
             {
@@ -164,7 +165,6 @@
                 // This has to be restored for things like changedAttributes() to work.
                 this._changed = changed;
             }
-            this._changing = false;
             return this;
         },
 
