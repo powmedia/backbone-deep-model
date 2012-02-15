@@ -138,7 +138,6 @@
 
                             // This needs to be set for things like changedAttributes() to work
                             self._changed[attr] = val;
-                            if (!options.silent) self.trigger('change:' + attr, self, val, options);
                         }
                     }
                 }
@@ -155,17 +154,7 @@
             // Fire the `"change"` event, if the model has been changed.
             if (!alreadyChanging && !options.silent && this._changed)
             {
-                // the change:attribute events have allready been fired. This will prevent them from being sent again.
-                var backupTrigger = this.trigger
-                var self = this;
-                this.trigger = function(evt){
-                    if (evt == 'change')
-                    {
-                        backupTrigger.apply(self, arguments)
-                    }
-                }
                 this.change(options);
-                this.trigger = backupTrigger;
             }
             return this;
         },
