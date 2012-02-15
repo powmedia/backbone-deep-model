@@ -121,6 +121,7 @@
             //START CUSTOM CODE
             var self = this;
             
+            this._changed = {};
             function performSet(attrs) {
                 // Update attributes.
                 for (var attr in attrs) {
@@ -134,7 +135,11 @@
                             setNested(now, attr, val);
                             //deleteNested(escaped, attr); //TODO: Create this and use instead of setNested line below?
                             setNested(escaped, attr, undefined);
-                            self._changed = true;
+
+                            // This needs to be set for things like changedAttributes() to work
+                            // but this.change() will also trigger all of these change events
+                            // with potentially invalid values. 
+                            self._changed[attr] = val;
                             if (!options.silent) self.trigger('change:' + attr, self, val, options);
                         }
                     }
@@ -149,7 +154,16 @@
 
 
             // Fire the `"change"` event, if the model has been changed.
-            if (!alreadyChanging && !options.silent && this._changed) this.change(options);
+            if (!alreadyChanging && !options.silent && this._changed)
+            {
+                var changed = _.clone(this._changed);
+                // This will cause the 'change' event to fire without sending each of
+                // the "change:attribute" a second time with invalid values
+                this._changed = {null: null};
+                this.change(options);
+                // This has to be restored for things like changedAttributes() to work.
+                this._changed = changed;
+            }
             this._changing = false;
             return this;
         },
