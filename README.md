@@ -7,7 +7,10 @@ Allows you to get and set nested attributes with path syntax, e.g. `user.type`.
 
 Triggers change events for changes on nested attributes.
 
-NOTE: This version is for use with Backbone v0.5.1
+Dependencies
+============
+
+Backbone >= 0.9.1
 
 Usage
 =====
@@ -49,3 +52,9 @@ Author
 ======
 
 Charles Davison - [powmedia](http://github.com/powmedia)
+
+
+Contributors
+============
+
+- [AsaAyers](https://github.com/AsaAyers)
