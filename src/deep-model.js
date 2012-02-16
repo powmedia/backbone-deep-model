@@ -166,12 +166,15 @@
         // Override has
         has: function(attr) {
             return getNested(this.attributes, attr) != null;
-        },
+        }
 
     });
     
     
     //Exports
     Backbone.DeepModel = DeepModel;
+
+    //For use in NodeJS
+    if (typeof module != 'undefined') module.exports = DeepModel;
     
 })(Backbone);
