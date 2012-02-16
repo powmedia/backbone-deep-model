@@ -39,15 +39,24 @@
      * @param {String}  Object path e.g. 'user.name'
      * @return {Mixed}
      */
-    function getNested(obj, path) {
+    function getNested(obj, path, return_exists) {
         var fields = path.split(".");
         var result = obj;
+        return_exists || (return_exists = false)
         for (var i = 0, n = fields.length; i < n; i++) {
             result = result[fields[i]];
             
             if (typeof result === 'undefined') {
+                if (return_exists)
+                {
+                    return false;
+                }
                 return result;
             }
+        }
+        if (return_exists)
+        {
+            return true;
         }
         return result;
     }
@@ -121,7 +130,7 @@
             //START CUSTOM CODE
             var self = this;
             
-            this._changed = {};
+            this._changed || (this._changed = {});
             function performSet(attrs) {
                 // Update attributes.
                 for (var attr in attrs) {
@@ -131,17 +140,19 @@
                         //Recursion for nested objects
                         performSet(val);
                     } else {
-                        // It seems like this check for undefined is handled more elegantly in the parent
-                        // but i'm just not seeing it. This was added to satisfy a backbone unit test that
-                        // requires setting an undefined attribute to fire change events.
-                        if ((getNested(now, attr) === undefined) ||
-                            _.isObject(val) || !_.isEqual(getNested(now, attr), val)) {
-                            setNested(now, attr, val);
-                            //deleteNested(escaped, attr); //TODO: Create this and use instead of setNested line below?
-                            setNested(escaped, attr, undefined);
+                        // if the value is being set this should progress. If the value is being
+                        // unset (undefined) the change should only occur if the attribute already exists.
+                        if (val !== undefined || getNested(now, attr, true))
+                        {
+                            if (_.isObject(val) || !_.isEqual(getNested(now, attr), val)) {
 
-                            // This needs to be set for things like changedAttributes() to work
-                            self._changed[attr] = val;
+                                setNested(now, attr, val);
+                                //deleteNested(escaped, attr); //TODO: Create this and use instead of setNested line below?
+                                setNested(escaped, attr, undefined);
+
+                                // This needs to be set for things like changedAttributes() to work
+                                self._changed[attr] = val;
+                            }
                         }
                     }
                 }
