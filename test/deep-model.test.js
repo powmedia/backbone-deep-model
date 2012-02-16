@@ -94,6 +94,26 @@ test("set: Sets nested values given a path", function() {
 });
 
 
+test('set: Sets a single value - not nested', function() {
+    var model = create();
+    
+    model.set('id', 456);
+    
+    equal(model.attributes.id, 456);
+});
+
+
+test('set: Sets a single value - nested', function() {
+   var model = create();
+   
+   model.set('user.type', 'Admin');
+   model.set('user.name.first', 'Foo');
+   
+   equal(model.attributes.user.type, 'Admin');
+   equal(model.attributes.user.name.first, 'Foo');
+});
+
+
 test("set: Sets values when given an object", function() {
     var model = create();
     
@@ -138,7 +158,7 @@ test("set: Triggers model change:[attribute] events", function() {
     
         var triggered1 = triggered2 = false;
     
-        model.bind('change:user.name.first', function(model, val) {
+        model.on('change:user.name.first', function(model, val) {
             equal(val, 'Lana');
         
             triggered1 = true;
@@ -220,10 +240,7 @@ test("unset: Unset a root key", function(){
 
     deepEqual(model.toJSON(), {
         id: 123
-        });
-
-
-
+    });
 });
 
 test("unset: Unset a deep key", function(){
