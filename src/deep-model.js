@@ -39,15 +39,29 @@
      * @param {String}  Object path e.g. 'user.name'
      * @return {Mixed}
      */
-    function getNested(obj, path) {
+    function getNested(obj, path, return_exists) {
         var fields = path.split(".");
         var result = obj;
+        return_exists || (return_exists = false)
         for (var i = 0, n = fields.length; i < n; i++) {
+            if (return_exists
+                && !_.has(result, fields[i]))
+            {
+                return false
+            }
             result = result[fields[i]];
             
             if (typeof result === 'undefined') {
+                if (return_exists)
+                {
+                    return true;
+                }
                 return result;
             }
+        }
+        if (return_exists)
+        {
+            return true;
         }
         return result;
     }
@@ -57,7 +71,7 @@
      * @param {String}  Object path e.g. 'user.name'
      * @param {Mixed}   Value to set
      */
-    function setNested(obj, path, val) {
+    function setNested(obj, path, val, options) {
         var fields = path.split(".");
         var result = obj;
         for (var i = 0, n = fields.length; i < n; i++) {
@@ -65,7 +79,7 @@
             
             //If the last in the path, set the value
             if (i === n - 1) {
-                result[field] = val;
+                options.unset ? delete result[field] : result[field] = val;
             } else {
                 //Create the child object if it doesn't exist
                 if (typeof result[field] === 'undefined') {
@@ -88,57 +102,64 @@
 
         // Override set
         // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
-        set: function(attrs, options) {
+        set: function(key, value, options) {
+            var attrs, attr, val;
+            if (_.isObject(key) || key == null) {
+                attrs = key;
+                options = value;
+            } else {
+                attrs = {};
+                attrs[key] = value;
+            }
+
             // Extract attributes and options.
             options || (options = {});
             if (!attrs) return this;
-            if (attrs.attributes) attrs = attrs.attributes;
-            var now = this.attributes, escaped = this._escapedAttributes;
+            if (attrs instanceof Backbone.Model) attrs = attrs.attributes;
+            if (options.unset) for (attr in attrs) attrs[attr] = void 0;
 
             // Run validation.
-            if (!options.silent && this.validate && !this._performValidation(attrs, options)) return false;
+            if (!this._validate(attrs, options)) return false;
 
             // Check for changes of `id`.
             if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
 
-            // We're about to start triggering change events.
-            var alreadyChanging = this._changing;
-            this._changing = true;
-            
-            
-            //START CUSTOM CODE
-            var self = this;
-            
-            function performSet(attrs) {
-                // Update attributes.
-                for (var attr in attrs) {
-                    var val = attrs[attr];
+            var now = this.attributes;
+            var escaped = this._escapedAttributes;
+            var prev = this._previousAttributes || {};
+            var alreadySetting = this._setting;
+            this._changed || (this._changed = {});
+            this._setting = true;
 
-                    if (val && val.constructor === Object) {
-                        //Recursion for nested objects
-                        performSet(val);
-                    } else {
-                        if (!_.isEqual(getNested(now, attr), val)) {
-                            setNested(now, attr, val);
-                            //deleteNested(escaped, attr); //TODO: Create this and use instead of setNested line below?
-                            setNested(escaped, attr, undefined);
-                            self._changed = true;
-                            if (!options.silent) self.trigger('change:' + attr, self, val, options);
-                        }
-                    }
+
+            // <custom code>
+            attrs = objToPaths(attrs);
+            // Update attributes.
+            for (attr in attrs) {
+                val = attrs[attr];
+                var current_value = getNested(now, attr);
+                var previous_value = getNested(prev, attr);
+                var attr_existed  = getNested(prev, attr, true);
+
+                if (!_.isEqual(current_value, val)) setNested(escaped, attr, undefined, {unset: true});
+                setNested(now, attr, val, options);
+                if (this._changing && !_.isEqual(this._changed[attr], val)) {
+                    this.trigger('change:' + attr, this, val, options);
+                    this._moreChanges = true;
+                }
+                delete this._changed[attr];
+                var attr_exists  = getNested(now, attr, true);
+                if (!_.isEqual(previous_value, val) || attr_exists != attr_existed) {
+                    this._changed[attr] = val;
                 }
             }
-            
-            attrs = objToPaths(attrs);
-            
-            performSet(attrs)
-            
-            //END CUSTOM CODE
+            // </custom code>
 
-
-            // Fire the `"change"` event, if the model has been changed.
-            if (!alreadyChanging && !options.silent && this._changed) this.change(options);
-            this._changing = false;
+            // Fire the `"change"` events, if the model has been changed.
+            if (!alreadySetting) {
+                if (!options.silent && this.hasChanged()) this.change(options);
+                this._setting = false;
+            }
             return this;
         },
 
@@ -146,51 +167,6 @@
         has: function(attr) {
             return getNested(this.attributes, attr) != null;
         },
-
-        // Remove an attribute from the model, firing `"change"` unless you choose
-        // to silence it. `unset` is a noop if the attribute doesn't exist.
-
-        unset : function(attr, options) {
-          //if (!(attr in this.attributes)) return this;
-          // New code to check if attribute exists
-          if (getNested(this.attributes, attr) === undefined) return this;
-          options || (options = {});
-
-          //var value = this.attributes[attr]; //Why is this needed?
-
-          // Run validation.
-          var validObj = {};
-          validObj[attr] = void 0;
-          if (!options.silent && this.validate && !this._performValidation(validObj, options)) return false;
-
-          // changedAttributes needs to know if an attribute has been unset.
-          (this._unsetAttributes || (this._unsetAttributes = [])).push(attr);
-
-          // Remove the attribute.
-
-          //Test if path
-          var path = attr.split('.')
-          if(path.length === 1){
-            delete this.attributes[attr];
-            delete this._escapedAttributes[attr];
-            if (attr == this.idAttribute) delete this.id;
-          } else {
-            //Get parent
-            var deep_property = path[path.length -1];
-            var parent = (path.slice(0,(path.length-1))).join('.')
-            var parent_value = getNested(this.attributes, parent);
-            var escaped_value = getNested(this._escapedAttributes, parent);
-            delete parent_value[deep_property];
-            delete escaped_value[deep_property];
-          }
-          this._changed = true;
-          if (!options.silent) {
-            this.trigger('change:' + attr, this, void 0, options);
-            this.change(options);
-          }
-
-          return this;
-        }
 
     });
     
