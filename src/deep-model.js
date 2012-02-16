@@ -45,7 +45,7 @@
         return_exists || (return_exists = false)
         for (var i = 0, n = fields.length; i < n; i++) {
             if (return_exists
-                && !(fields[i] in result))
+                && !_.has(result, fields[i]))
             {
                 return false
             }
@@ -139,7 +139,6 @@
                 val = attrs[attr];
                 var current_value = getNested(now, attr);
                 var previous_value = getNested(prev, attr);
-                var attr_exists  = getNested(now, attr, true);
                 var attr_existed  = getNested(prev, attr, true);
 
                 if (!_.isEqual(current_value, val)) setNested(escaped, attr, undefined, {unset: true});
@@ -149,6 +148,7 @@
                     this._moreChanges = true;
                 }
                 delete this._changed[attr];
+                var attr_exists  = getNested(now, attr, true);
                 if (!_.isEqual(previous_value, val) || attr_exists != attr_existed) {
                     this._changed[attr] = val;
                 }
