@@ -30,6 +30,10 @@ Example code:
                 first: 'Sterling',
                 last: 'Archer'
             }
+        },
+        otherSpies: {
+            { name: 'Lana' },
+            { name: 'Cyrril' }
         }
     });
     
@@ -47,6 +51,9 @@ Example code:
     
     //Use get() with path names so you can create getters later
     console.log(model.get('user.type'));    // 'Spy'
+
+    //You can use index notation to fetch from arrays
+    console.log(model.get('otherSpies.0.name')) //'Lana'
 
 Author
 ======
