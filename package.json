@@ -4,9 +4,9 @@
   "author": {
     "name": "Charles Davison"
   },
-  "version": "0.6",
+  "version": "0.7",
   "dependencies": {
-    "backbone": ">=0.9.1",
+    "backbone": ">=0.9.2",
   },
   "main": "./src/deep-model"
 }
