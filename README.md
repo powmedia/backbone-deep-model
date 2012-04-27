@@ -10,7 +10,7 @@ Triggers change events for changes on nested attributes.
 Dependencies
 ============
 
-Backbone >= 0.9.1
+Backbone >= 0.9.2
 
 Usage
 =====
