@@ -39,6 +39,20 @@ test("get: Gets nested attribute values", function() {
 });
 
 
+test("get: Gets nested attribute values from arrays", function() {
+    var model = new Backbone.DeepModel({
+        spies: [
+            { name: 'Sterling' },
+            { name: 'Lana' }
+        ]
+    });
+    
+    deepEqual(model.get('spies.0.name'), 'Sterling');
+    
+    deepEqual(model.get('spies.1.name'), 'Lana');
+});
+
+
 test("set: Sets nested values given a path", function() {
     var model = create();
     
