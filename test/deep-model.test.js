@@ -53,6 +53,17 @@ test("get: Gets nested attribute values from arrays", function() {
 });
 
 
+test("get: Gets attributes if empty objects", function() {
+    var model = new Backbone.DeepModel({
+        foo: {},
+        bar: []
+    });
+
+    deepEqual(model.get('foo'), {});
+    deepEqual(model.get('bar'), []);
+});
+
+
 test("set: Sets nested values given a path", function() {
     var model = create();
     

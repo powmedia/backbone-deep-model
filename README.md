@@ -72,6 +72,7 @@ Changelog
 
 0.7.1:
 - Model.changedAttributes now works with nested attributes.
+- Fix getting attribute that is an empty object
 
 0.7:
 - Update for Backbone v0.9.2
