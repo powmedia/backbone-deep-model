@@ -364,3 +364,38 @@ test("unset: Triggers model change:[attribute] events", function() {
     })();
 });
 
+
+test('changedAttributes: returns changed attributes', function() {
+    var model = create();
+
+    model.set('id', 456);
+    model.set('user.name.first', 'Lana');
+
+    var changed = model.changedAttributes();
+
+    var expected = {
+        id: 456,
+        'user.name.first': 'Lana'
+    }
+
+    deepEqual(changed, expected);
+});
+
+
+test('changedAttributes: returns changed attributes compared to given object', function() {
+    var model = create();
+
+    var diff = {
+        id: 789,
+        'user.name.last': 'Kang'
+    }
+
+    var changed = model.changedAttributes(diff);
+
+    var expected = {
+        id: 789,
+        'user.name.last': 'Kang'
+    }
+
+    deepEqual(changed, expected);
+});

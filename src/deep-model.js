@@ -220,6 +220,16 @@
           return this;
         },
 
+        changedAttributes: function(diff) {
+          if (!diff) return this.hasChanged() ? _.clone(objToPaths(this.changed)) : false;
+          var val, changed = false, old = this._previousAttributes;
+          for (var attr in diff) {
+            if (_.isEqual(old[attr], (val = diff[attr]))) continue;
+            (changed || (changed = {}))[attr] = val;
+          }
+          return changed;
+        },
+
     });
     
     

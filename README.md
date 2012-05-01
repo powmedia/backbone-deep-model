@@ -65,3 +65,13 @@ Contributors
 ============
 
 - [AsaAyers](https://github.com/AsaAyers)
+
+
+Changelog
+=========
+
+0.7.1:
+- Model.changedAttributes now works with nested attributes.
+
+0.7:
+- Update for Backbone v0.9.2
