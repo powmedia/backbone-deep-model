@@ -70,6 +70,9 @@ Contributors
 Changelog
 =========
 
+0.7.2:
+- Check if the child object exists, but isn't an object. #12 (tgriesser)
+
 0.7.1:
 - Model.changedAttributes now works with nested attributes.
 - Fix getting attribute that is an empty object
