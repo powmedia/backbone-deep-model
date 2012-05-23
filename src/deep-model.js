@@ -85,8 +85,8 @@
             if (i === n - 1) {
                 options.unset ? delete result[field] : result[field] = val;
             } else {
-                //Create the child object if it doesn't exist
-                if (typeof result[field] === 'undefined') {
+                //Create the child object if it doesn't exist, or isn't an object
+                if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
                     result[field] = {};
                 }
                 
