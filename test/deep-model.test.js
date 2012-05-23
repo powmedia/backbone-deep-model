@@ -158,6 +158,25 @@ test("set: Sets values when given an object", function() {
     deepEqual(model.attributes, newValues);
 });
 
+test('set: Can set an object in place of a child non-object value', function() {
+    var model = new Backbone.DeepModel({
+        id: 123,
+        name: ''
+    });
+
+    var newName = {
+        first: 'Burt',
+        last: 'Reynolds'
+    };
+
+    model.set('name', newName);
+
+    console.log(model.attributes.name)
+
+    deepEqual(model.attributes.id, 123);
+    deepEqual(model.attributes.name, newName);
+});
+
 
 test("set: Triggers model change:[attribute] events", function() {
     (function() {
