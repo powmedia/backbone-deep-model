@@ -70,6 +70,9 @@ Contributors
 Changelog
 =========
 
+0.7.3:
+- Add DeepModel.keyPathSeparator to allow using custom path separators
+
 0.7.2:
 - Check if the child object exists, but isn't an object. #12 (tgriesser)
 
