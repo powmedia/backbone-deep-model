@@ -40,7 +40,7 @@ test("get: Gets nested attribute values", function() {
 
 test("get: Gets nested attribute values using a non-default separator (~)", function() {
     var model = create();
-    model.keyPathSeparator = "~";
+    Backbone.DeepModel.keyPathSeparator = "~";
     
     deepEqual(model.get('user~type'), 'Spy');
     
@@ -50,6 +50,8 @@ test("get: Gets nested attribute values using a non-default separator (~)", func
     });
     
     deepEqual(model.get('user~name~first'), 'Sterling');
+
+    delete Backbone.DeepModel.keyPathSeparator;
 });
 
 
@@ -193,13 +195,15 @@ test('set: Can set an object in place of a child non-object value', function() {
 
 test('set: Sets a single value using a non-default separator (~)', function() {
    var model = create();
-   model.keyPathSeparator = "~";
+   Backbone.DeepModel.keyPathSeparator = "~";
    
    model.set('user~type', 'Admin');
    model.set('user~name~first', 'Foo');
    
    equal(model.attributes.user.type, 'Admin');
    equal(model.attributes.user.name.first, 'Foo');
+
+    delete Backbone.DeepModel.keyPathSeparator;
 });
 
 test("set: Triggers model change:[attribute] events", function() {

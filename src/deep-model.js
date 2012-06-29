@@ -109,7 +109,7 @@
         // Override get
         // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
         get: function(attr) {
-            return getNested(this.attributes, attr, this.keyPathSeparator);
+            return getNested(this.attributes, attr, this.constructor.keyPathSeparator);
         },
 
         // Override set
@@ -149,35 +149,35 @@
 
             
             // <custom code>
-            attrs = objToPaths(attrs, this.keyPathSeparator);
+            attrs = objToPaths(attrs, this.constructor.keyPathSeparator);
 
             // For each `set` attribute...
             for (attr in attrs) {
               val = attrs[attr];
 
-              var currentValue = getNested(now, attr, this.keyPathSeparator),
-                  previousValue = getNested(prev, attr, this.keyPathSeparator),
-                  escapedValue = getNested(escaped, attr, this.keyPathSeparator),
+              var currentValue = getNested(now, attr, this.constructor.keyPathSeparator),
+                  previousValue = getNested(prev, attr, this.constructor.keyPathSeparator),
+                  escapedValue = getNested(escaped, attr, this.constructor.keyPathSeparator),
                   hasCurrentValue = _.isUndefined(currentValue),
                   hasPreviousValue = _.isUndefined(previousValue);
 
               // If the new and current value differ, record the change.
               if (!_.isEqual(currentValue, val) || (options.unset && hasCurrentValue)) {
-                deleteNested(escaped, attr, this.keyPathSeparator);
-                setNested((options.silent ? this._silent : changes), attr, true, this.keyPathSeparator);
+                deleteNested(escaped, attr, this.constructor.keyPathSeparator);
+                setNested((options.silent ? this._silent : changes), attr, true, this.constructor.keyPathSeparator);
               }
 
               // Update or delete the current value.
-              options.unset ? deleteNested(now, attr, this.keyPathSeparator) : setNested(now, attr, val, this.keyPathSeparator);
+              options.unset ? deleteNested(now, attr, this.constructor.keyPathSeparator) : setNested(now, attr, val, this.constructor.keyPathSeparator);
 
               // If the new and previous value differ, record the change.  If not,
               // then remove changes for this attribute.
               if (!_.isEqual(previousValue, val) || (hasCurrentValue != hasPreviousValue)) {
-                setNested(this.changed, attr, val, this.keyPathSeparator);
-                if (!options.silent) setNested(this._pending, attr, true, this.keyPathSeparator);
+                setNested(this.changed, attr, val, this.constructor.keyPathSeparator);
+                if (!options.silent) setNested(this._pending, attr, true, this.constructor.keyPathSeparator);
               } else {
-                deleteNested(this.changed, attr, this.keyPathSeparator);
-                deleteNested(this._pending, attr, this.keyPathSeparator);
+                deleteNested(this.changed, attr, this.constructor.keyPathSeparator);
+                deleteNested(this._pending, attr, this.constructor.keyPathSeparator);
               }
             }
 
@@ -188,7 +188,7 @@
 
         // Override has
         has: function(attr) {
-            return getNested(this.attributes, attr, this.keyPathSeparator) != null;
+            return getNested(this.attributes, attr, this.constructor.keyPathSeparator) != null;
         },
 
         // Override change
@@ -198,12 +198,12 @@
           this._changing = true;
 
           // Silent changes become pending changes.
-          for (var attr in objToPaths(this._silent, this.keyPathSeparator)) setNested(this._pending, attr, true, this.keyPathSeparator);
+          for (var attr in objToPaths(this._silent, this.constructor.keyPathSeparator)) setNested(this._pending, attr, true, this.constructor.keyPathSeparator);
 
           // Silent changes are triggered.
           var changes = _.extend({}, options.changes, this._silent);
           this._silent = {};
-          for (var attr in objToPaths(changes, this.keyPathSeparator)) {
+          for (var attr in objToPaths(changes, this.constructor.keyPathSeparator)) {
             this.trigger('change:' + attr, this, this.get(attr), options);
           }
           if (changing) return this;
@@ -213,9 +213,9 @@
             this._pending = {};
             this.trigger('change', this, options);
             // Pending and silent changes still remain.
-            for (var attr in objToPaths(this.changed, this.keyPathSeparator)) {
-              if (getNested(this._pending, attr, this.keyPathSeparator) || getNested(this._silent, attr, this.keyPathSeparator)) continue;
-              deleteNested(this.change, attr, this.keyPathSeparator);
+            for (var attr in objToPaths(this.changed, this.constructor.keyPathSeparator)) {
+              if (getNested(this._pending, attr, this.constructor.keyPathSeparator) || getNested(this._silent, attr, this.constructor.keyPathSeparator)) continue;
+              deleteNested(this.change, attr, this.constructor.keyPathSeparator);
             }
             this._previousAttributes = _.clone(this.attributes);
           }
@@ -225,7 +225,7 @@
         },
 
         changedAttributes: function(diff) {
-          if (!diff) return this.hasChanged() ? _.clone(objToPaths(this.changed, this.keyPathSeparator)) : false;
+          if (!diff) return this.hasChanged() ? _.clone(objToPaths(this.changed, this.constructor.keyPathSeparator)) : false;
           var val, changed = false, old = this._previousAttributes;
           for (var attr in diff) {
             if (_.isEqual(old[attr], (val = diff[attr]))) continue;
