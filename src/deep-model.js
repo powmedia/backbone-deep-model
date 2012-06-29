@@ -4,14 +4,17 @@
  */
 ;(function(Backbone) {
 
+    var defaultKeyPathSeparator = ".";
+
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
      * e.g. { "level1.level2": "value" }
      * 
      * @param  {Object}      Nested object e.g. { level1: { level2: 'value' } }
+     * @param  {String}      Delimiter between elements in the key path
      * @return {Object}      Shallow object with path names e.g. { 'level1.level2': 'value' }
      */
-    function objToPaths(obj) {
+    function objToPaths(obj, keyPathSeparator) {
         var ret = {};
 
         for (var key in obj) {
@@ -19,12 +22,11 @@
 
             if (val && val.constructor === Object && !_.isEmpty(val)) {
                 //Recursion for embedded objects
-                var obj2 = objToPaths(val);
+                var obj2 = objToPaths(val, keyPathSeparator);
 
                 for (var key2 in obj2) {
                     var val2 = obj2[key2];
-
-                    ret[key+'.'+key2] = val2;
+                    ret[key + (keyPathSeparator || defaultKeyPathSeparator) + key2] = val2;
                 }
             } else {
                 ret[key] = val;
@@ -37,10 +39,11 @@
     /**
      * @param {Object}  Object to fetch attribute from
      * @param {String}  Object path e.g. 'user.name'
+     * @param {String}  Delimiter between elements in the key path
      * @return {Mixed}
      */
-    function getNested(obj, path, return_exists) {
-        var fields = path.split(".");
+    function getNested(obj, path, keyPathSeparator, return_exists) {
+        var fields = path.split(keyPathSeparator || defaultKeyPathSeparator);
         var result = obj;
         return_exists || (return_exists = false)
         for (var i = 0, n = fields.length; i < n; i++) {
@@ -72,11 +75,12 @@
      * @param {Object} [options]          Options
      * @param {Boolean} [options.unset]   Whether to delete the value
      * @param {Mixed}                     Value to set
+     * @param {String}                    Delimiter between elements in the key path
      */
-    function setNested(obj, path, val, options) {
+    function setNested(obj, path, val, keyPathSeparator, options) {
         options = options || {};
 
-        var fields = path.split(".");
+        var fields = path.split(keyPathSeparator || defaultKeyPathSeparator);
         var result = obj;
         for (var i = 0, n = fields.length; i < n; i++) {
             var field = fields[i];
@@ -96,8 +100,8 @@
         }
     }
 
-    function deleteNested(obj, path) {
-      setNested(obj, path, null, { unset: true });
+    function deleteNested(obj, path, keyPathSeparator) {
+      setNested(obj, path, null, keyPathSeparator, { unset: true });
     }
 
     var DeepModel = Backbone.Model.extend({
@@ -105,7 +109,7 @@
         // Override get
         // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
         get: function(attr) {
-            return getNested(this.attributes, attr);
+            return getNested(this.attributes, attr, this.constructor.keyPathSeparator);
         },
 
         // Override set
@@ -145,35 +149,35 @@
 
             
             // <custom code>
-            attrs = objToPaths(attrs);
+            attrs = objToPaths(attrs, this.constructor.keyPathSeparator);
 
             // For each `set` attribute...
             for (attr in attrs) {
               val = attrs[attr];
 
-              var currentValue = getNested(now, attr),
-                  previousValue = getNested(prev, attr),
-                  escapedValue = getNested(escaped, attr),
+              var currentValue = getNested(now, attr, this.constructor.keyPathSeparator),
+                  previousValue = getNested(prev, attr, this.constructor.keyPathSeparator),
+                  escapedValue = getNested(escaped, attr, this.constructor.keyPathSeparator),
                   hasCurrentValue = _.isUndefined(currentValue),
                   hasPreviousValue = _.isUndefined(previousValue);
 
               // If the new and current value differ, record the change.
               if (!_.isEqual(currentValue, val) || (options.unset && hasCurrentValue)) {
-                deleteNested(escaped, attr);
-                setNested((options.silent ? this._silent : changes), attr, true);
+                deleteNested(escaped, attr, this.constructor.keyPathSeparator);
+                setNested((options.silent ? this._silent : changes), attr, true, this.constructor.keyPathSeparator);
               }
 
               // Update or delete the current value.
-              options.unset ? deleteNested(now, attr) : setNested(now, attr, val);
+              options.unset ? deleteNested(now, attr, this.constructor.keyPathSeparator) : setNested(now, attr, val, this.constructor.keyPathSeparator);
 
               // If the new and previous value differ, record the change.  If not,
               // then remove changes for this attribute.
               if (!_.isEqual(previousValue, val) || (hasCurrentValue != hasPreviousValue)) {
-                setNested(this.changed, attr, val);
-                if (!options.silent) setNested(this._pending, attr, true);
+                setNested(this.changed, attr, val, this.constructor.keyPathSeparator);
+                if (!options.silent) setNested(this._pending, attr, true, this.constructor.keyPathSeparator);
               } else {
-                deleteNested(this.changed, attr);
-                deleteNested(this._pending, attr);
+                deleteNested(this.changed, attr, this.constructor.keyPathSeparator);
+                deleteNested(this._pending, attr, this.constructor.keyPathSeparator);
               }
             }
 
@@ -184,7 +188,7 @@
 
         // Override has
         has: function(attr) {
-            return getNested(this.attributes, attr) != null;
+            return getNested(this.attributes, attr, this.constructor.keyPathSeparator) != null;
         },
 
         // Override change
@@ -194,12 +198,12 @@
           this._changing = true;
 
           // Silent changes become pending changes.
-          for (var attr in objToPaths(this._silent)) setNested(this._pending, attr, true);
+          for (var attr in objToPaths(this._silent, this.constructor.keyPathSeparator)) setNested(this._pending, attr, true, this.constructor.keyPathSeparator);
 
           // Silent changes are triggered.
           var changes = _.extend({}, options.changes, this._silent);
           this._silent = {};
-          for (var attr in objToPaths(changes)) {
+          for (var attr in objToPaths(changes, this.constructor.keyPathSeparator)) {
             this.trigger('change:' + attr, this, this.get(attr), options);
           }
           if (changing) return this;
@@ -209,9 +213,9 @@
             this._pending = {};
             this.trigger('change', this, options);
             // Pending and silent changes still remain.
-            for (var attr in objToPaths(this.changed)) {
-              if (getNested(this._pending, attr) || getNested(this._silent, attr)) continue;
-              deleteNested(this.change, attr);
+            for (var attr in objToPaths(this.changed, this.constructor.keyPathSeparator)) {
+              if (getNested(this._pending, attr, this.constructor.keyPathSeparator) || getNested(this._silent, attr, this.constructor.keyPathSeparator)) continue;
+              deleteNested(this.change, attr, this.constructor.keyPathSeparator);
             }
             this._previousAttributes = _.clone(this.attributes);
           }
@@ -221,7 +225,7 @@
         },
 
         changedAttributes: function(diff) {
-          if (!diff) return this.hasChanged() ? _.clone(objToPaths(this.changed)) : false;
+          if (!diff) return this.hasChanged() ? _.clone(objToPaths(this.changed, this.constructor.keyPathSeparator)) : false;
           var val, changed = false, old = this._previousAttributes;
           for (var attr in diff) {
             if (_.isEqual(old[attr], (val = diff[attr]))) continue;
