@@ -12,7 +12,8 @@
      * @return {Object}      Shallow object with path names e.g. { 'level1.level2': 'value' }
      */
     function objToPaths(obj) {
-        var ret = {};
+        var ret = {},
+            separator = DeepModel.keyPathSeparator;
 
         for (var key in obj) {
             var val = obj[key];
@@ -24,7 +25,7 @@
                 for (var key2 in obj2) {
                     var val2 = obj2[key2];
 
-                    ret[key+'.'+key2] = val2;
+                    ret[key + separator + key2] = val2;
                 }
             } else {
                 ret[key] = val;
@@ -40,7 +41,9 @@
      * @return {Mixed}
      */
     function getNested(obj, path, return_exists) {
-        var fields = path.split(".");
+        var separator = DeepModel.keyPathSeparator;
+
+        var fields = path.split(separator);
         var result = obj;
         return_exists || (return_exists = false)
         for (var i = 0, n = fields.length; i < n; i++) {
@@ -76,7 +79,9 @@
     function setNested(obj, path, val, options) {
         options = options || {};
 
-        var fields = path.split(".");
+        var separator = DeepModel.keyPathSeparator;
+
+        var fields = path.split(separator);
         var result = obj;
         for (var i = 0, n = fields.length; i < n; i++) {
             var field = fields[i];
@@ -231,6 +236,10 @@
         },
 
     });
+
+
+    //Config; override in your app to customise
+    DeepModel.keyPathSeparator = '.';
     
     
     //Exports
