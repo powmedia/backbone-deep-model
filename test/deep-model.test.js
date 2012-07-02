@@ -138,6 +138,23 @@ test('set: Sets a single value - nested', function() {
    equal(model.attributes.user.name.first, 'Foo');
 });
 
+test('set: Sets a single value inside null to create an object', function() {
+   var model = create();
+   
+   model.set('user', null);
+   model.set('user.type', 'Admin');
+   
+   equal(model.attributes.user.type, 'Admin');
+});
+
+test('set: Sets a single value inside null to create an object when given an object', function() {
+   var model = create();
+   
+   model.set('user', null);
+   model.set({user: {type: 'Admin'}});
+   
+   equal(model.attributes.user.type, 'Admin');
+});
 
 test("set: Sets values when given an object", function() {
     var model = create();

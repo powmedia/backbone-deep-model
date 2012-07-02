@@ -53,6 +53,10 @@
                 return false
             }
             result = result[fields[i]];
+
+            if (result == null && i < n - 1) {
+                result = {};
+            }
             
             if (typeof result === 'undefined') {
                 if (return_exists)
