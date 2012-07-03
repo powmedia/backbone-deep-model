@@ -244,10 +244,10 @@ test("set: Triggers model change:[attribute] events", function() {
         deepEqual(triggeredEvents, [
             'change:id',
             'change:user.name.first',
-            'change:user.name.*',
-            'change:user.*',
+            'change',
             'change:*',
-            'change'
+            'change:user.*',
+            'change:user.name.*'
         ]);
     })();
 });
@@ -390,11 +390,13 @@ test("unset: Triggers model change:[attribute] events", function() {
         //Check callbacks ran
         deepEqual(triggeredEvents, [
             'change:id',
-            'change:user.name.first',
-            'change:user.name.*',
-            'change:user.*',
+            'change',
             'change:*',
-            'change'
+            'change:user.name.first',
+            'change',
+            'change:*',
+            'change:user.*',
+            'change:user.name.*'
         ]);
     })();
 });
