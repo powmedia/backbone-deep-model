@@ -70,6 +70,9 @@ Contributors
 Changelog
 =========
 
+master:
+- Allow setting nested attributes inside an attribute whose value is currently null (sqs)
+
 0.7.3:
 - Add DeepModel.keyPathSeparator to allow using custom path separators
 
