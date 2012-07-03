@@ -71,6 +71,7 @@ Changelog
 =========
 
 master:
+- Fix: #18 Setting a deep property to the same value deletes the property (mikefrey)
 - Allow setting nested attributes inside an attribute whose value is currently null (sqs)
 
 0.7.3:

@@ -11,15 +11,15 @@ function create() {
             }
         }
     });
-    
+
     return model;
 }
 
 test("get: Gets nested attribute values", function() {
     var model = create();
-    
+
     deepEqual(model.get('id'), 123);
-    
+
     deepEqual(model.get('user'), {
         type: 'Spy',
         name: {
@@ -27,14 +27,14 @@ test("get: Gets nested attribute values", function() {
             last: 'Archer'
         }
     });
-    
+
     deepEqual(model.get('user.type'), 'Spy');
-    
+
     deepEqual(model.get('user.name'), {
         first: 'Sterling',
         last: 'Archer'
     });
-    
+
     deepEqual(model.get('user.name.first'), 'Sterling');
 });
 
@@ -46,9 +46,9 @@ test("get: Gets nested attribute values from arrays", function() {
             { name: 'Lana' }
         ]
     });
-    
+
     deepEqual(model.get('spies.0.name'), 'Sterling');
-    
+
     deepEqual(model.get('spies.1.name'), 'Lana');
 });
 
@@ -66,39 +66,39 @@ test("get: Gets attributes if empty objects", function() {
 
 test("set: Sets nested values given a path", function() {
     var model = create();
-    
+
     model.set({ id: 456 });
-    
+
     equal(model.attributes.id, 456);
-    
-    
+
+
     model.set({
         'user.name.first': 'Lana',
         'user.name.last':  'Kang'
     });
-    
+
     equal(model.attributes.user.name.first, 'Lana');
     equal(model.attributes.user.name.last, 'Kang');
-    
-    
+
+
     model.set({
         'user.type': 'Agent'
     });
-    
+
     equal(model.attributes.user.type, 'Agent');
-    
-    
+
+
     model.set({
         'user.name': {
             first: 'Cheryl',
             last: 'Tunt'
         }
     });
-    
+
     equal(model.attributes.user.name.first, 'Cheryl');
     equal(model.attributes.user.name.last, 'Tunt');
-    
-    
+
+
     model.set({
         user: {
             type: 'Secretary',
@@ -108,7 +108,7 @@ test("set: Sets nested values given a path", function() {
             }
         }
     });
-    
+
     deepEqual(model.attributes.user, {
         type: 'Secretary',
         name: {
@@ -121,19 +121,19 @@ test("set: Sets nested values given a path", function() {
 
 test('set: Sets a single value - not nested', function() {
     var model = create();
-    
+
     model.set('id', 456);
-    
+
     equal(model.attributes.id, 456);
 });
 
 
 test('set: Sets a single value - nested', function() {
    var model = create();
-   
+
    model.set('user.type', 'Admin');
    model.set('user.name.first', 'Foo');
-   
+
    equal(model.attributes.user.type, 'Admin');
    equal(model.attributes.user.name.first, 'Foo');
 });
@@ -158,7 +158,7 @@ test('set: Sets a single value inside null to create an object when given an obj
 
 test("set: Sets values when given an object", function() {
     var model = create();
-    
+
     var newValues = {
         id: 456,
         user: {
@@ -169,9 +169,9 @@ test("set: Sets values when given an object", function() {
             }
         }
     };
-    
+
     model.set(newValues);
-    
+
     deepEqual(model.attributes, newValues);
 });
 
@@ -196,65 +196,65 @@ test('set: Can set an object in place of a child non-object value', function() {
 test("set: Triggers model change:[attribute] events", function() {
     (function() {
         var model = create();
-    
+
         var triggered = false;
-    
+
         model.bind('change:id', function(model, val) {
             equal(val, 456);
-        
+
             triggered = true;
         });
-    
+
         model.set({ id: 456 });
-        
+
         //Check callbacks ran
         ok(triggered);
     })();
-    
-    
+
+
     (function() {
         var model = create();
-    
+
         var triggered1 = triggered2 = false;
-    
+
         model.on('change:user.name.first', function(model, val) {
             equal(val, 'Lana');
-        
+
             triggered1 = true;
         });
-        
+
         model.bind('change:user.name.last', function(model, val) {
             equal(val, 'Kang');
-        
+
             triggered2 = true;
         });
-    
+
         model.set({
             'user.name.first': 'Lana',
             'user.name.last':  'Kang'
         });
-    
+
         //Check callbacks ran
         ok(triggered1);
         ok(triggered2);
     })();
-    
-    
+
+
     //Check only expected change events are running
     (function() {
         var model = create();
-    
+
         var triggeredEvents = [];
-    
+
         model.bind('all', function(changedAttr, model, val) {
             triggeredEvents.push(changedAttr);
         });
-    
+
         model.set({
             'id': 456,
             'user.name.first': 'Lana'
         });
-    
+
         //Check callbacks ran
         deepEqual(triggeredEvents, [
             'change:id',
@@ -266,10 +266,21 @@ test("set: Triggers model change:[attribute] events", function() {
 
 test("set: Don't convert Date objects to strings", function() {
     var model = create();
-    
+
     model.set({ date: new Date });
-    
+
     ok(_.isDate(model.attributes.date));
+});
+
+test("set: Don't delete property when setting it twice with the same value", function() {
+    var model = new Backbone.DeepModel();
+    model.set('route', {});
+
+    model.set('route.pathName', '/some/route/path');
+    equal(model.get('route.pathName'), '/some/route/path');
+
+    model.set('route.pathName', '/some/route/path');
+    equal(model.get('route.pathName'), '/some/route/path');
 });
 
 test("has: Check if model has root key", function(){
