@@ -188,8 +188,6 @@ test('set: Can set an object in place of a child non-object value', function() {
 
     model.set('name', newName);
 
-    console.log(model.attributes.name)
-
     deepEqual(model.attributes.id, 123);
     deepEqual(model.attributes.name, newName);
 });
