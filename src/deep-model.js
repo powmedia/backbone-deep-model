@@ -199,7 +199,9 @@
         // Override change
         change: function(options) {
           options || (options = {});
-          var changing = this._changing;
+          var separator = DeepModel.keyPathSeparator,
+              ancestorPaths = {},
+              changing = this._changing;
           this._changing = true;
 
           // Silent changes become pending changes.
@@ -209,6 +211,13 @@
           var changes = _.extend({}, options.changes, this._silent);
           this._silent = {};
           for (var attr in objToPaths(changes)) {
+            // Store 'ancestor' event paths to trigger later
+            var i, path = '', attrPath = attr.split(separator);
+            for (i=0 ; i<attrPath.length ; i++) {
+              ancestorPaths[path] = true;
+              path += attrPath[i] + separator;
+            }
+            // Trigger 'leaf' event
             this.trigger('change:' + attr, this, this.get(attr), options);
           }
           if (changing) return this;
@@ -220,9 +229,14 @@
             // Pending and silent changes still remain.
             for (var attr in objToPaths(this.changed)) {
               if (getNested(this._pending, attr) || getNested(this._silent, attr)) continue;
-              deleteNested(this.change, attr);
+              deleteNested(this.changed, attr);
             }
             this._previousAttributes = _.clone(this.attributes);
+          }
+
+          // Trigger change events for ancestors
+          for (var path in ancestorPaths) {
+            this.trigger('change:' + path + '*', this, this.get(path), options);
           }
 
           this._changing = false;
