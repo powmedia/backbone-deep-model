@@ -225,7 +225,7 @@
             // Pending and silent changes still remain.
             for (var attr in objToPaths(this.changed)) {
               if (getNested(this._pending, attr) || getNested(this._silent, attr)) continue;
-              deleteNested(this.change, attr);
+              deleteNested(this.changed, attr);
             }
             this._previousAttributes = _.clone(this.attributes);
           }
