@@ -494,12 +494,12 @@ test('changedAttributes(diff): behaves as Model for top level properties', funct
 
     var diff = { foo: 2 };
 
-    //deepEqual(deepModel.changedAttributes(diff), model.changedAttributes(diff));
+    deepEqual(deepModel.changedAttributes(diff), model.changedAttributes(diff));
     deepEqual(deepModel.changedAttributes(diff), { foo: 2 });
 
     model.set({foo:2});
     deepModel.set({foo:2});
-    //deepEqual(deepModel.changedAttributes(diff), model.changedAttributes(diff));
+    deepEqual(deepModel.changedAttributes(diff), model.changedAttributes(diff));
     deepEqual(deepModel.changedAttributes(diff), false);
 });
 
