@@ -191,12 +191,10 @@
             return this;
         },
 
-        // Override has
         has: function(attr) {
-            return getNested(this.attributes, attr) != null;
+          return getNested(this.attributes, attr) != null;
         },
 
-        // Override change
         change: function(options) {
           options || (options = {});
           var changing = this._changing;
@@ -220,7 +218,7 @@
             // Pending and silent changes still remain.
             for (var attr in objToPaths(this.changed)) {
               if (getNested(this._pending, attr) || getNested(this._silent, attr)) continue;
-              deleteNested(this.change, attr);
+              deleteNested(this.changed, attr);
             }
             this._previousAttributes = _.clone(this.attributes);
           }
@@ -229,15 +227,30 @@
           return this;
         },
 
+        hasChanged: function(attr) {
+          var self = this;
+
+          //Empty objects indicate no changes, so remove these first
+          _.each(this.changed, function(val, key) {
+            if (_.isObject(val) && _.isEmpty(val)) {
+              delete self.changed[key];
+            }
+          });
+
+          if (!arguments.length) return !_.isEmpty(this.changed);
+          return getNested(this.changed, attr) != null;
+        },
+
         changedAttributes: function(diff) {
           if (!diff) return this.hasChanged() ? _.clone(objToPaths(this.changed)) : false;
-          var val, changed = false, old = this._previousAttributes;
-          for (var attr in diff) {
+          var val, changed = false, old = objToPaths(this._previousAttributes);
+          for (var attr in objToPaths(diff)) {
             if (_.isEqual(old[attr], (val = diff[attr]))) continue;
             (changed || (changed = {}))[attr] = val;
           }
+
           return changed;
-        },
+        }
 
     });
 
