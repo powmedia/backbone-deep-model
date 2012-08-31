@@ -421,7 +421,7 @@ test("unset: Triggers model change:[attribute] events", function() {
 });
 
 
-test('changedAttributes: returns changed attributes', function() {
+/*test('changedAttributes(): returns changed attributes', function() {
     var model = create();
 
     model.set('id', 456);
@@ -438,7 +438,7 @@ test('changedAttributes: returns changed attributes', function() {
 });
 
 
-test('changedAttributes: returns changed attributes compared to given object', function() {
+test('changedAttributes(): returns changed attributes compared to given object', function() {
     var model = create();
 
     var diff = {
@@ -454,4 +454,127 @@ test('changedAttributes: returns changed attributes compared to given object', f
     }
 
     deepEqual(changed, expected);
+});*/
+
+
+test('changedAttributes(): behaves as Model for top level properties', function() {
+    var model = new Backbone.Model({foo:1, bar:1}),
+        deepModel = new Backbone.DeepModel({foo:1, bar:1});
+
+    deepEqual(deepModel.changedAttributes(), model.changedAttributes());
+
+    model.set({foo:2}, {silent:true});
+    deepModel.set({foo:2}, {silent:true});
+    deepEqual(deepModel.changedAttributes(), model.changedAttributes());
+    
+    model.set({foo:3});
+    deepModel.set({foo:3});
+    deepEqual(deepModel.changedAttributes(), model.changedAttributes());
+});
+
+test('changedAttributes(): with deep properties', function() {
+    var deepModel = new Backbone.DeepModel({
+        foo: { baz: 1 }, 
+        bar: { baz: 1 }
+    });
+
+    deepEqual(deepModel.changedAttributes(), false);
+
+    deepModel.set({'foo.bar':2}, {silent:true});
+    deepEqual(deepModel.changedAttributes(), {'foo.bar':2});
+    
+    deepModel.set({'foo.bar':3});
+    deepEqual(deepModel.changedAttributes(), false);
+});
+
+
+test('changedAttributes(diff): behaves as Model for top level properties', function() {
+    var model = new Backbone.Model({foo:1, bar:1}),
+        deepModel = new Backbone.DeepModel({foo:1, bar:1});
+
+    var diff = { foo: 2 };
+
+    deepEqual(deepModel.changedAttributes(diff), model.changedAttributes(diff));
+    deepEqual(deepModel.changedAttributes(diff), { foo: 2 });
+
+    model.set({foo:2});
+    deepModel.set({foo:2});
+    deepEqual(deepModel.changedAttributes(diff), model.changedAttributes(diff));
+    deepEqual(deepModel.changedAttributes(diff), false);
+});
+
+test('changedAttributes(diff): with deep properties', function() {
+    var deepModel = new Backbone.DeepModel({
+        foo: { baz: 1 }, 
+        bar: { baz: 1 }
+    });
+
+    var diff = { 'foo.baz': 2 };
+
+    deepEqual(deepModel.changedAttributes(diff), { 'foo.baz': 2 });
+
+    deepModel.set({'foo.baz': 2});
+    deepEqual(deepModel.changedAttributes(diff), false);
+});
+
+
+test('hasChanged(): behaves as Model for top level attributes', function() {
+    var model = new Backbone.Model({test:1}),
+        deepModel = new Backbone.DeepModel({test:1});
+
+    equal(deepModel.hasChanged(), model.hasChanged());
+
+    model.set({test:2}, {silent:true});
+    deepModel.set({test:2}, {silent:true});
+    equal(deepModel.hasChanged(), model.hasChanged());
+    
+    model.set({test:2});
+    deepModel.set({test:2});
+    equal(deepModel.hasChanged(), model.hasChanged());
+});
+
+
+test('hasChanged(): with deep attributes', function() {
+    var deepModel = new Backbone.DeepModel({
+        foo: { bar: 1 }
+    });
+
+    equal(deepModel.hasChanged(), false);
+
+    deepModel.set({'foo.bar':2}, {silent:true});
+    equal(deepModel.hasChanged(), true);
+    
+    deepModel.set({'foo.bar':2});
+    equal(deepModel.hasChanged(), false);
+});
+
+
+test('hasChanged(attr): behaves as Model for top level attributes', function() {
+    var model = new Backbone.Model({test:1}),
+        deepModel = new Backbone.DeepModel({test:1});
+
+    equal(deepModel.hasChanged('test'), model.hasChanged('test'));
+
+    model.set({test:2}, {silent:true});
+    deepModel.set({test:2}, {silent:true});
+    equal(deepModel.hasChanged('test'), model.hasChanged('test'));
+    
+    model.set({test:2});
+    deepModel.set({test:2});
+    equal(deepModel.hasChanged('test'), model.hasChanged('test'));
+});
+
+
+test('hasChanged(attr): with deep attributes', function() {
+    var deepModel = new Backbone.DeepModel({
+        foo: { bar: 1 }
+    });
+
+    equal(deepModel.hasChanged('foo.bar'), false);
+
+    deepModel.set({'foo.bar':2}, {silent:true});
+    equal(deepModel.hasChanged('foo.bar'), true);
+    
+    deepModel.set({'foo.bar':3});
+    equal(deepModel.hasChanged('foo.bar'), false);
 });
