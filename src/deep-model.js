@@ -1,4 +1,4 @@
-/*jshint expr:true*/
+/*jshint expr:true eqnull:true */
 /**
  *
  * Improves Backbone Model support when nested attributes are used.
@@ -56,7 +56,7 @@
             }
             result = result[fields[i]];
 
-            if (result === null && i < n - 1) {
+            if (result == null && i < n - 1) {
                 result = {};
             }
             
@@ -129,7 +129,7 @@
             var attrs, attr, val;
 
             // Handle both `"key", value` and `{key: value}` -style arguments.
-            if (_.isObject(key) || key === null) {
+            if (_.isObject(key) || key == null) {
                 attrs = key;
                 options = value;
             } else {
@@ -194,7 +194,7 @@
         },
 
         has: function(attr) {
-          return getNested(this.attributes, attr) !== null;
+          return getNested(this.attributes, attr) != null;
         },
 
         change: function(options) {
@@ -241,7 +241,7 @@
           });
 
           if (!arguments.length) return !_.isEmpty(this.changed);
-          return getNested(this.changed, attr) !== null;
+          return getNested(this.changed, attr) != null;
         },
 
         changedAttributes: function(diff) {
