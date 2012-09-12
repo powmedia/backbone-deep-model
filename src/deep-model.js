@@ -1,4 +1,4 @@
-define(['backbone'], function (Backbone) {
+define(['underscore', 'backbone'], function (_, Backbone) {
     
     /**
      * Improves Backbone Model support when nested attributes are used.
