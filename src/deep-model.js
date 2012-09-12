@@ -268,5 +268,7 @@ define(['underscore', 'backbone'], function (_, Backbone) {
         if (typeof module != 'undefined') module.exports = DeepModel;
     
     })(Backbone);
+    
+    return Backbone;
 
 });
