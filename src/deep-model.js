@@ -2,15 +2,15 @@
  * Improves Backbone Model support when nested attributes are used.
  * get() and set() can take paths e.g. 'user.name'
  */
-;(function (factory) {
-    if (typeof define ==='function' && define.amd) {
+;(function(factory) {
+    if (typeof define === 'function' && define.amd) {
         // AMD
         define(['underscore', 'backbone'], factory);
     } else {
         // globals
         factory(_, Backbone);
     }
-}(function (_, Backbone) {
+}(function(_, Backbone) {
     
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
