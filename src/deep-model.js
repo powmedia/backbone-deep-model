@@ -145,7 +145,7 @@
             if (!this._validate(attrs, options)) return false;
 
             // Check for changes of `id`.
-            if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
+            if (!_.isUndefined(getNested(attrs, this.idAttribute))) this.id = getNested(attrs, this.idAttribute);
 
             var changes = options.changes = {};
             var now = this.attributes;
