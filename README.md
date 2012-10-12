@@ -71,6 +71,7 @@ Changelog
 =========
 
 master:
+- JSHint linting (tony)
 - Fix: undefined in setNested resulting from a recent change in backbone master. (evadnoob)
 
 0.7.4:
