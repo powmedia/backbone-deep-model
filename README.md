@@ -31,10 +31,10 @@ Example code:
                 last: 'Archer'
             }
         },
-        otherSpies: {
+        otherSpies: [
             { name: 'Lana' },
             { name: 'Cyrril' }
-        }
+        ]
     });
     
     //You can bind to change events on nested attributes
