@@ -6,8 +6,16 @@
  *
  *
  */
-;(function(Backbone) {
-
+;(function(factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD
+        define(['underscore', 'backbone'], factory);
+    } else {
+        // globals
+        factory(_, Backbone);
+    }
+}(function(_, Backbone) {
+    
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
      * e.g. { "level1.level2": "value" }
@@ -284,5 +292,7 @@
 
     //For use in NodeJS
     if (typeof module != 'undefined') module.exports = DeepModel;
+    
+    return Backbone;
 
-})(Backbone);
+}));
