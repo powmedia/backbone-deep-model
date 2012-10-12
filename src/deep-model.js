@@ -193,12 +193,17 @@
             return this;
         },
 
+        // Override has
         has: function(attr) {
           return getNested(this.attributes, attr) != null;
         },
 
+        // Override change
         change: function(options) {
           options || (options = {});
+          var separator = DeepModel.keyPathSeparator,
+              ancestorPaths = {};
+              
           var attr;
           var changing = this._changing;
           this._changing = true;
@@ -210,6 +215,13 @@
           var changes = _.extend({}, options.changes, this._silent);
           this._silent = {};
           for (attr in objToPaths(changes)) {
+            // Store 'ancestor' event paths to trigger later
+            var i, path = '', attrPath = attr.split(separator);
+            for (i=0 ; i<attrPath.length ; i++) {
+              ancestorPaths[path] = true;
+              path += attrPath[i] + separator;
+            }
+            // Trigger 'leaf' event
             this.trigger('change:' + attr, this, this.get(attr), options);
           }
           if (changing) return this;
@@ -224,6 +236,11 @@
               deleteNested(this.changed, attr);
             }
             this._previousAttributes = _.clone(this.attributes);
+          }
+
+          // Trigger change events for ancestors
+          for (var path in ancestorPaths) {
+            this.trigger('change:' + path + '*', this, this.get(path), options);
           }
 
           this._changing = false;
