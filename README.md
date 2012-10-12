@@ -74,6 +74,7 @@ Changelog
 =========
 
 master:
+- Add AMD support (drd0rk)
 - Added "change:*" event triggers for ancestors of nested attributes. (jessehouchins)
 - JSHint linting (tony)
 - Fix: undefined in setNested resulting from a recent change in backbone master. (evadnoob)
