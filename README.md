@@ -73,7 +73,8 @@ Contributors
 Changelog
 =========
 
-master:
+0.8.0:
+- Allow nested attribute as Model identifier (milosdakic)
 - Add AMD support (drd0rk)
 - Added "change:*" event triggers for ancestors of nested attributes. (jessehouchins)
 - JSHint linting (tony)
