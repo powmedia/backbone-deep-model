@@ -1,6 +1,10 @@
+/*jshint expr:true eqnull:true */
 /**
+ *
  * Improves Backbone Model support when nested attributes are used.
  * get() and set() can take paths e.g. 'user.name'
+ *
+ *
  */
 ;(function(Backbone) {
 
@@ -45,12 +49,10 @@
 
         var fields = path.split(separator);
         var result = obj;
-        return_exists || (return_exists = false)
+        return_exists || (return_exists === false);
         for (var i = 0, n = fields.length; i < n; i++) {
-            if (return_exists
-                && !_.has(result, fields[i]))
-            {
-                return false
+            if (return_exists && !_.has(result, fields[i])) {
+                return false;
             }
             result = result[fields[i]];
 
@@ -197,16 +199,17 @@
 
         change: function(options) {
           options || (options = {});
+          var attr;
           var changing = this._changing;
           this._changing = true;
 
           // Silent changes become pending changes.
-          for (var attr in objToPaths(this._silent)) setNested(this._pending, attr, true);
+          for (attr in objToPaths(this._silent)) setNested(this._pending, attr, true);
 
           // Silent changes are triggered.
           var changes = _.extend({}, options.changes, this._silent);
           this._silent = {};
-          for (var attr in objToPaths(changes)) {
+          for (attr in objToPaths(changes)) {
             this.trigger('change:' + attr, this, this.get(attr), options);
           }
           if (changing) return this;
@@ -216,7 +219,7 @@
             this._pending = {};
             this.trigger('change', this, options);
             // Pending and silent changes still remain.
-            for (var attr in objToPaths(this.changed)) {
+            for (attr in objToPaths(this.changed)) {
               if (getNested(this._pending, attr) || getNested(this._silent, attr)) continue;
               deleteNested(this.changed, attr);
             }
