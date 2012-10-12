@@ -70,6 +70,9 @@ Contributors
 Changelog
 =========
 
+master:
+- Fix: undefined in setNested resulting from a recent change in backbone master. (evadnoob)
+
 0.7.4:
 - Fix: #22 model.hasChanged() is not reset after change event fires
 - Fix: #18 Setting a deep property to the same value deletes the property (mikefrey)
