@@ -41,6 +41,9 @@ Example code:
     model.bind('change:user.name.first', function(model, val) {
         console.log(val);
     });
+
+    //Wildcards are supported
+    model.bind('change:user.*', function() {});
     
     //Use set with a path name for nested attributes
     //NOTE you must you quotation marks around the key name when using a path
@@ -71,6 +74,7 @@ Changelog
 =========
 
 master:
+- Added "change:*" event triggers for ancestors of nested attributes. (jessehouchins)
 - JSHint linting (tony)
 - Fix: undefined in setNested resulting from a recent change in backbone master. (evadnoob)
 
