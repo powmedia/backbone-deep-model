@@ -278,8 +278,11 @@
           }
 
           return changed;
-        }
+        },
 
+        toJSON: function(){
+          return $.extend(true, {}, this.attributes)
+        }
     });
 
 
