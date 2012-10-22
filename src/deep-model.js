@@ -272,7 +272,8 @@
         changedAttributes: function(diff) {
           if (!diff) return this.hasChanged() ? _.clone(objToPaths(this.changed)) : false;
           var val, changed = false, old = objToPaths(this._previousAttributes);
-          for (var attr in objToPaths(diff)) {
+          diff = objToPaths(diff);
+          for (var attr in diff) {
             if (_.isEqual(old[attr], (val = diff[attr]))) continue;
             (changed || (changed = {}))[attr] = val;
           }
