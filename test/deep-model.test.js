@@ -571,6 +571,15 @@ test('hasChanged(attr): behaves as Model for top level attributes', function() {
     equal(deepModel.hasChanged('test'), model.hasChanged('test'));
 });
 
+test('toJSON(): Return a copy of the model\'s attributes for JSON stringification', function(){
+    var deepModel = new Backbone.DeepModel({
+      foo: {bar: 1}
+    })
+    var json = deepModel.toJSON()
+    deepEqual(json, {foo: {bar: 1}})
+    json.foo.bar = 2
+    deepEqual(deepModel.attributes, {foo: {bar: 1}})
+})
 
 test('hasChanged(attr): with deep attributes', function() {
     var deepModel = new Backbone.DeepModel({
