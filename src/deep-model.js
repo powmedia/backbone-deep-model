@@ -293,6 +293,6 @@
     //For use in NodeJS
     if (typeof module != 'undefined') module.exports = DeepModel;
     
-    return Backbone;
+    return DeepModel;
 
 }));
