@@ -248,7 +248,7 @@
 
           // Trigger change events for ancestors
           for (var path in ancestorPaths) {
-            this.trigger('change:' + path + '*', this, this.get(path), options);
+            this.trigger('change:' + path + '*', this, this.get(path.substr(0, path.length-separator.length)), options);
           }
 
           this._changing = false;
