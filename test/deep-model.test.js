@@ -286,6 +286,53 @@ test("set: Don't delete property when setting it twice with the same value", fun
     equal(model.get('route.pathName'), '/some/route/path');
 });
 
+test("set: options are passed to the change:[attribute] callback", function() {
+    (function() {
+        var model = create();
+
+        var triggered = false;
+
+        model.bind('change:id', function(model, val, options) {
+            equal(val, 456);
+
+            equal(options.owner, 'Jane Doe');
+            triggered = true;
+        });
+
+        model.set({ id: 456 }, {owner: 'Jane Doe'});
+
+        //Check callbacks ran
+        ok(triggered);
+    })();
+
+    (function() {
+        var model = create();
+
+        var triggered1 = triggered2 = false;
+
+        model.on('change:user.name.first', function(model, val, options) {
+            equal(val, 'Lana');
+
+            equal(options.changeid, 871);
+            triggered1 = true;
+        });
+
+        model.bind('change:user.name.last', function(model, val, options) {
+            equal(val, 'Kang');
+
+            equal(options.changeid, 872);
+            triggered2 = true;
+        });
+
+        model.set({'user.name.first': 'Lana' }, {changeid: 871});
+        model.set({user: { name: { last: 'Kang' } } }, {changeid: 872});
+
+        //Check callbacks ran
+        ok(triggered1);
+        ok(triggered2);
+    })();
+});
+
 test("has: Check if model has root key", function(){
 	var model = create();
 
