@@ -675,3 +675,29 @@ test("change(): triggers model change:[attribute] events when silently changing 
         ]);
     })();
 });
+
+test("defaults: with deep attributes", function() {
+    DefaultsModel = Backbone.DeepModel.extend({
+        defaults: {
+            details: {
+                name: {
+                    last: 'Smith',
+                    initial: 'J'
+                }
+            }
+        }
+    });
+
+    var model = new DefaultsModel({
+        details: { 
+            name: {
+                first: 'John',
+                initial: 'Z'
+            }
+        }
+    });
+
+    equal(model.get('details.name.first'), 'John');
+    equal(model.get('details.name.last'), 'Smith');
+    equal(model.get('details.name.initial'), 'Z');
+});
