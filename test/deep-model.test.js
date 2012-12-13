@@ -585,3 +585,93 @@ test('hasChanged(attr): with deep attributes', function() {
     deepModel.set({'foo.bar':3});
     equal(deepModel.hasChanged('foo.bar'), false);
 });
+
+test("change(): triggers model change:[attribute] events when silently changing values", function() {
+    (function() {
+        var model = create();
+
+        var triggered = false;
+
+        model.bind('change:id', function(model, val) {
+            equal(val, 456);
+
+            triggered = true;
+        });
+
+        model.set({ id: 456 }, {silent: true});
+
+        //Check callback did not run
+        ok(!triggered);
+
+        model.change();
+
+        //Check callbacks ran
+        ok(triggered);
+    })();
+
+
+    (function() {
+        var model = create();
+
+        var triggered1 = triggered2 = false;
+
+        model.on('change:user.name.first', function(model, val) {
+            equal(val, 'Lana');
+
+            triggered1 = true;
+        });
+
+        model.bind('change:user.name.last', function(model, val) {
+            equal(val, 'Kang');
+
+            triggered2 = true;
+        });
+
+        model.set({
+            'user.name.first': 'Lana',
+            'user.name.last':  'Kang'
+        }, {silent: true});
+
+        //Check callbacks didn't run
+        ok(!triggered1);
+        ok(!triggered2);
+
+        model.change();
+
+        //Check callbacks ran
+        ok(triggered1);
+        ok(triggered2);
+    })();
+
+
+    //Check only expected change events are running
+    (function() {
+        var model = create();
+
+        var triggeredEvents = [];
+
+        model.bind('all', function(changedAttr, model, val) {
+            triggeredEvents.push(changedAttr);
+        });
+
+        model.set({
+            'id': 456,
+            'user.name.first': 'Lana'
+        }, {silent: true});
+
+        // Check callbacks didn't run
+        deepEqual(triggeredEvents, []);
+
+        model.change();
+
+        //Check callbacks ran
+        deepEqual(triggeredEvents, [
+            'change:id',
+            'change:user.name.first',
+            'change',
+            'change:*',
+            'change:user.*',
+            'change:user.name.*'
+        ]);
+    })();
+});
