@@ -172,7 +172,7 @@
 
               var currentValue = getNested(now, attr),
                   previousValue = getNested(prev, attr),
-                  escapedValue = getNested(escaped, attr),
+                  //escapedValue = getNested(escaped, attr),
                   hasCurrentValue = _.isUndefined(currentValue),
                   hasPreviousValue = _.isUndefined(previousValue);
 
