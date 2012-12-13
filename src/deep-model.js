@@ -121,6 +121,34 @@
 
     var DeepModel = Backbone.Model.extend({
 
+        // Override constructor
+        // Support having nested defaults by using _.deepExtend instead of _.extend
+        constructor: function(attributes, options) {
+            var defaults;
+            attributes || (attributes = {});
+            if (options && options.collection) this.collection = options.collection;
+            if (options && options.parse) attributes = this.parse(attributes);
+            if (defaults = _.result(this, 'defaults')) {
+                //<custom code>
+                // Replaced the call to _.extend with _.deepExtend.
+                attributes = _.deepExtend({}, defaults, attributes);
+                //</custom code>
+            }
+            this.attributes = {};
+            this._escapedAttributes = {};
+            this.cid = _.uniqueId('c');
+            this.changed = {};
+            this._silent = {};
+            this._pending = {};
+            this.set(attributes, {silent: true});
+            // Reset change tracking.
+            this.changed = {};
+            this._silent = {};
+            this._pending = {};
+            this._previousAttributes = _.clone(this.attributes);
+            this.initialize.apply(this, arguments);
+        },
+
         // Override get
         // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
         get: function(attr) {
