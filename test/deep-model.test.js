@@ -259,12 +259,44 @@ test("set: Triggers model change:[attribute] events", function() {
         deepEqual(triggeredEvents, [
             'change:id',
             'change:user.name.first',
-            'change',
-            'change:*',
+            'change:user.name.*',
             'change:user.*',
-            'change:user.name.*'
+            'change'
         ]);
     })();
+});
+
+test("set: Correct values passed to wildcard event handlers", function() {
+    var model = create();
+
+    var triggered1 = triggered2 = triggered3 = false;
+
+    model.on('change:user.name.first', function(model, val) {
+        equal(val, 'Lana');
+
+        triggered1 = true;
+    });
+
+    model.bind('change:user.name.*', function(model, val) {
+        deepEqual(val, { first: 'Lana', last: 'Archer' } );
+
+        triggered2 = true;
+    });
+
+    model.bind('change:user.*', function(model, val) {
+        deepEqual(val, { name: { first: 'Lana', last: 'Archer' }, type: 'Spy' });
+
+        triggered3 = true;
+    });
+
+    model.set({
+        'user.name.first': 'Lana'
+    });
+
+    //Check callbacks ran
+    ok(triggered1);
+    ok(triggered2);
+    ok(triggered3);
 });
 
 test("set: Don't convert Date objects to strings", function() {
@@ -464,22 +496,20 @@ test("unset: Triggers model change:[attribute] events", function() {
         deepEqual(triggeredEvents, [
             'change:id',
             'change',
-            'change:*',
             'change:user.name.first',
-            'change',
-            'change:*',
+            'change:user.name.*',
             'change:user.*',
-            'change:user.name.*'
+            'change'
         ]);
     })();
 });
 
 
-/*test('changedAttributes(): returns changed attributes', function() {
+test('changedAttributes(): returns changed attributes', function() {
     var model = create();
 
-    model.set('id', 456);
-    model.set('user.name.first', 'Lana');
+    model.set('id', 456, {silent: true});
+    model.set('user.name.first', 'Lana', {silent: true});
 
     var changed = model.changedAttributes();
 
@@ -508,7 +538,7 @@ test('changedAttributes(): returns changed attributes compared to given object',
     }
 
     deepEqual(changed, expected);
-});*/
+});
 
 
 test('changedAttributes(): behaves as Model for top level properties', function() {
@@ -520,7 +550,10 @@ test('changedAttributes(): behaves as Model for top level properties', function(
     model.set({foo:2}, {silent:true});
     deepModel.set({foo:2}, {silent:true});
     deepEqual(deepModel.changedAttributes(), model.changedAttributes());
-    
+
+    model.change();
+    deepModel.change();
+
     model.set({foo:3});
     deepModel.set({foo:3});
     deepEqual(deepModel.changedAttributes(), model.changedAttributes());
@@ -537,6 +570,8 @@ test('changedAttributes(): with deep properties', function() {
     deepModel.set({'foo.bar':2}, {silent:true});
     deepEqual(deepModel.changedAttributes(), {'foo.bar':2});
     
+    deepModel.change();
+
     deepModel.set({'foo.bar':3});
     deepEqual(deepModel.changedAttributes(), false);
 });
@@ -581,9 +616,12 @@ test('hasChanged(): behaves as Model for top level attributes', function() {
     model.set({test:2}, {silent:true});
     deepModel.set({test:2}, {silent:true});
     equal(deepModel.hasChanged(), model.hasChanged());
-    
-    model.set({test:2});
-    deepModel.set({test:2});
+
+    model.change();
+    deepModel.change();
+
+    model.set({test:3});
+    deepModel.set({test:3});
     equal(deepModel.hasChanged(), model.hasChanged());
 });
 
@@ -597,8 +635,10 @@ test('hasChanged(): with deep attributes', function() {
 
     deepModel.set({'foo.bar':2}, {silent:true});
     equal(deepModel.hasChanged(), true);
-    
-    deepModel.set({'foo.bar':2});
+
+    deepModel.change();
+
+    deepModel.set({'foo.bar':3});
     equal(deepModel.hasChanged(), false);
 });
 
@@ -612,9 +652,12 @@ test('hasChanged(attr): behaves as Model for top level attributes', function() {
     model.set({test:2}, {silent:true});
     deepModel.set({test:2}, {silent:true});
     equal(deepModel.hasChanged('test'), model.hasChanged('test'));
-    
-    model.set({test:2});
-    deepModel.set({test:2});
+
+    model.change();
+    deepModel.change();
+
+    model.set({test:3});
+    deepModel.set({test:3});
     equal(deepModel.hasChanged('test'), model.hasChanged('test'));
 });
 
@@ -628,7 +671,9 @@ test('hasChanged(attr): with deep attributes', function() {
 
     deepModel.set({'foo.bar':2}, {silent:true});
     equal(deepModel.hasChanged('foo.bar'), true);
-    
+
+    deepModel.change();
+
     deepModel.set({'foo.bar':3});
     equal(deepModel.hasChanged('foo.bar'), false);
 });
@@ -715,10 +760,9 @@ test("change(): triggers model change:[attribute] events when silently changing 
         deepEqual(triggeredEvents, [
             'change:id',
             'change:user.name.first',
-            'change',
-            'change:*',
+            'change:user.name.*',
             'change:user.*',
-            'change:user.name.*'
+            'change'
         ]);
     })();
 });
