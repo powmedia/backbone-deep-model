@@ -792,3 +792,18 @@ test("defaults: with deep attributes", function() {
     equal(model.get('details.name.last'), 'Smith');
     equal(model.get('details.name.initial'), 'Z');
 });
+
+test("defaults: with empty constructor", function() {
+  DefaultsModel = Backbone.DeepModel.extend({
+    defaults: {
+      firstName: 'john',
+      lastName: 'doe'
+    }
+  });
+
+  var model = new DefaultsModel();
+
+  equal(model.get('firstName'), 'john');
+  equal(model.get('lastName'), 'doe');
+});
+
