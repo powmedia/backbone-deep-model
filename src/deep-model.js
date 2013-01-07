@@ -237,12 +237,12 @@
             // and update `this.changed` accordingly. If we're inside of a `change`
             // call, also add a trigger to the list.
             //<custom code>
-            if (getNested(current, key) !== val) {
+            if (!_.isEqual(getNested(current, key), val)) {
 
               this.changed[key] = val;
               if (!loud) continue;
 
-              setNested(current, key, val);
+              setNested(current, key, (_.isArray(val) ? _.deepClone(val) : val));
 
               var separator = DeepModel.keyPathSeparator;
               var fields = key.split(separator);

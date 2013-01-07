@@ -365,6 +365,77 @@ test("set: options are passed to the change:[attribute] callback", function() {
     })();
 });
 
+
+test("set: check events are triggered when using array notation", function() {
+    var model = create();
+
+    var triggeredEvents = [];
+
+    model.bind('all', function(changedAttr, model, val) {
+        triggeredEvents.push(changedAttr);
+    });
+
+    model.set('list', new Array());
+    deepEqual(triggeredEvents, [
+        'change:list',
+        'change'
+    ]);
+
+    triggeredEvents = [];
+
+    model.set('list.0', {name: "John"});
+    deepEqual(triggeredEvents, [
+        'change:list.0.name',
+        'change:list.0.*',
+        'change:list.*',
+        'change'
+    ]);
+
+    triggeredEvents = [];
+
+    model.set('list.0.name', 'Bill');
+    deepEqual(triggeredEvents, [
+        'change:list.0.name',
+        'change:list.0.*',
+        'change:list.*',
+        'change'
+    ]);
+
+    triggeredEvents = [];
+
+    model.set('list.0.age', 21);
+    deepEqual(triggeredEvents, [
+        'change:list.0.age',
+        'change:list.0.*',
+        'change:list.*',
+        'change'
+    ]);
+
+    triggeredEvents = [];
+
+    model.set('list.1', {name: 'Kate', age: 20});
+    deepEqual(triggeredEvents, [
+        'change:list.1.name',
+        'change:list.1.age',
+        'change:list.1.*',
+        'change:list.*',
+        'change'
+    ]);
+
+    triggeredEvents = [];
+
+    deepEqual(model.get('list'), [
+        {
+            name: 'Bill',
+            age: 21
+        },
+        {
+            name: 'Kate',
+            age: 20
+        }
+    ]);
+});
+
 test("has: Check if model has root key", function(){
 	var model = create();
 
