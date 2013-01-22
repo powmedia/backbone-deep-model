@@ -180,6 +180,7 @@
             } else {
               (attrs = {})[key] = val;
             }
+            options = options || {};
 
             // Extract attributes and options.
             var silent = options && options.silent;
