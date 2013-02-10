@@ -10,12 +10,19 @@ Triggers change events for changes on nested attributes.
 Dependencies
 ============
 
-Backbone >= 0.9.2
+Backbone >= 0.9.9
+
+`_.deepClone` and `_.deepExtend` mixins.  (See Installation section below).
+
+Installation
+============
+
+1. Include Backbone and it's dependencies in your page/app.
+2. Include `lib/underscore.mixin.deepExtend.js` if you haven't already.
+3. Include `src/backbone-deep-model.js`.
 
 Usage
 =====
-
-To install, include the `src/backbone-deep-model.js` file in your HTML page, after Backbone and it's dependencies.
 
 Then just have your models extend from Backbone.DeepModel instead of Backbone.Model.
 
@@ -67,11 +74,16 @@ Charles Davison - [powmedia](http://github.com/powmedia)
 Contributors
 ============
 
+- [mattyway](https://github.com/mattyway)
 - [AsaAyers](https://github.com/AsaAyers)
 
 
 Changelog
 =========
+
+0.9.0:
+- Support Backbone 0.9.9 (mattyway)
+- Add support for deep model defaults (mattyway)
 
 0.8.0:
 - Allow nested attribute as Model identifier (milosdakic)
