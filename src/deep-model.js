@@ -138,8 +138,8 @@
                 attrs = _.deepExtend({}, defaults, attributes);
                 //</custom code>
             }
-            this.set(attrs, {silent: true});
             //<custom code>
+            this.set(attrs, _.extend({silent: true}, options));
             // Replaced call to _.clone with _.deepClone
             this._currentAttributes = _.deepClone(this.attributes);
             this._previousAttributes = _.deepClone(this.attributes);
