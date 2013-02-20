@@ -133,11 +133,11 @@
             if (defaults = _.result(this, 'defaults')) {
                 //<custom code>
                 // Replaced the call to _.defaults with _.deepExtend.
-                attrs = _.deepExtend({}, attrs, defaults);
+                attrs = _.deepExtend({}, defaults, attrs);
                 //</custom code>
             }
             this.set(attrs, options);
-            this._changed = {};
+            this.changed = {};
             this.initialize.apply(this, arguments);
         },
 
@@ -250,6 +250,13 @@
           var shallowAttributes = objToPaths(this.attributes);
           for (var key in shallowAttributes) attrs[key] = void 0;
           return this.set(attrs, _.extend({}, options, {unset: true}));
+        },
+
+        // Determine if the model has changed since the last `"change"` event.
+        // If you specify an attribute name, determine if that attribute has changed.
+        hasChanged: function(attr) {
+          if (attr == null) return !_.isEmpty(this.changed);
+          return getNested(this.changed, attr) !== undefined;
         },
 
         // Return an object containing all the attributes that have changed, or

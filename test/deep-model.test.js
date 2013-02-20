@@ -215,7 +215,8 @@ test("set: Triggers model change:[attribute] events", function() {
     (function() {
         var model = create();
 
-        var triggered1 = triggered2 = false;
+        var triggered1 = false,
+            triggered2 = false;
 
         model.on('change:user.name.first', function(model, val) {
             equal(val, 'Lana');
@@ -269,7 +270,9 @@ test("set: Triggers model change:[attribute] events", function() {
 test("set: Correct values passed to wildcard event handlers", function() {
     var model = create();
 
-    var triggered1 = triggered2 = triggered3 = false;
+    var triggered1 = false,
+        triggered2 = false,
+        triggered3 = false;
 
     model.on('change:user.name.first', function(model, val) {
         equal(val, 'Lana');
@@ -340,7 +343,8 @@ test("set: options are passed to the change:[attribute] callback", function() {
     (function() {
         var model = create();
 
-        var triggered1 = triggered2 = false;
+        var triggered1 = false,
+            triggered2 = false;
 
         model.on('change:user.name.first', function(model, val, options) {
             equal(val, 'Lana');
@@ -505,16 +509,96 @@ test("unset: Triggers model change:[attribute] events", function() {
 });
 
 
+test('hasChanged(): matches Model behaviour - when not changed', function() {
+    var model = new Backbone.Model({ foo: 'bar' });
+    
+    var deepModel = new Backbone.DeepModel({
+        foo: 'bar',
+        user: {
+            first: 'John',
+            last: 'Smith'
+        }
+    });
+
+    //Should match default Model behavior on top level
+    deepEqual(model.hasChanged(), false);
+    deepEqual(deepModel.hasChanged(), false);
+});
+
+
+test('hasChanged(): matches Model behaviour - when changed', function() {
+    var model = new Backbone.Model({ foo: 'bar' });
+    
+    var deepModel = new Backbone.DeepModel({
+        foo: 'bar',
+        user: {
+            first: 'John',
+            last: 'Smith'
+        }
+    });
+
+    model.set('foo', 'baz');
+    deepModel.set('foo', 'baz');
+
+    //Should match default Model behavior on top level
+    deepEqual(model.hasChanged(), true);
+    deepEqual(deepModel.hasChanged(), true);
+});
+
+test('hasChanged(attr): matches Model behaviour - when not changed', function() {
+    var model = new Backbone.Model({ foo: 'bar' });
+    
+    var deepModel = new Backbone.DeepModel({
+        foo: 'bar',
+        user: {
+            first: 'John',
+            last: 'Smith'
+        }
+    });
+
+    //Should match default Model behavior on top level
+    deepEqual(model.hasChanged('foo'), false);
+    deepEqual(deepModel.hasChanged('foo'), false);
+
+    //On nested
+    deepEqual(deepModel.hasChanged('user.first'), false);
+});
+
+
+test('hasChanged(attr): matches Model behaviour - when changed', function() {
+    var model = new Backbone.Model({ foo: 'bar' });
+    
+    var deepModel = new Backbone.DeepModel({
+        foo: 'bar',
+        user: {
+            first: 'John',
+            last: 'Smith'
+        }
+    });
+
+    //Should match default Model behavior on top level
+    model.set('foo', 'baz');
+    deepModel.set('foo', 'baz');
+
+    deepEqual(model.hasChanged('foo'), true);
+    deepEqual(deepModel.hasChanged('foo'), true);
+
+    //On nested
+    deepModel.set('user.first', 'Frank');
+
+    deepEqual(deepModel.hasChanged('user.first'), true);
+});
+
+
+
 test('changedAttributes(): returns changed attributes', function() {
     var model = create();
 
-    model.set('id', 456, {silent: true});
     model.set('user.name.first', 'Lana', {silent: true});
 
     var changed = model.changedAttributes();
 
     var expected = {
-        id: 456,
         'user.name.first': 'Lana'
     }
 
@@ -547,16 +631,11 @@ test('changedAttributes(): behaves as Model for top level properties', function(
 
     deepEqual(deepModel.changedAttributes(), model.changedAttributes());
 
-    model.set({foo:2}, {silent:true});
-    deepModel.set({foo:2}, {silent:true});
-    deepEqual(deepModel.changedAttributes(), model.changedAttributes());
+    model.set({foo:2});
+    deepModel.set({foo:2});
 
-    model.change();
-    deepModel.change();
-
-    model.set({foo:3});
-    deepModel.set({foo:3});
-    deepEqual(deepModel.changedAttributes(), model.changedAttributes());
+    deepEqual(model.changedAttributes(), { foo: 2 });
+    deepEqual(deepModel.changedAttributes(), { foo: 2 });
 });
 
 test('changedAttributes(): with deep properties', function() {
@@ -567,13 +646,8 @@ test('changedAttributes(): with deep properties', function() {
 
     deepEqual(deepModel.changedAttributes(), false);
 
-    deepModel.set({'foo.bar':2}, {silent:true});
+    deepModel.set({'foo.bar':2});
     deepEqual(deepModel.changedAttributes(), {'foo.bar':2});
-    
-    deepModel.change();
-
-    deepModel.set({'foo.bar':3});
-    deepEqual(deepModel.changedAttributes(), false);
 });
 
 
@@ -613,16 +687,12 @@ test('hasChanged(): behaves as Model for top level attributes', function() {
 
     equal(deepModel.hasChanged(), model.hasChanged());
 
-    model.set({test:2}, {silent:true});
-    deepModel.set({test:2}, {silent:true});
-    equal(deepModel.hasChanged(), model.hasChanged());
+    //With silent
+    model.set({test:2});
+    deepModel.set({test:2});
 
-    model.change();
-    deepModel.change();
-
-    model.set({test:3});
-    deepModel.set({test:3});
-    equal(deepModel.hasChanged(), model.hasChanged());
+    deepEqual(model.hasChanged(), true);
+    deepEqual(deepModel.hasChanged(), true);
 });
 
 
@@ -633,13 +703,8 @@ test('hasChanged(): with deep attributes', function() {
 
     equal(deepModel.hasChanged(), false);
 
-    deepModel.set({'foo.bar':2}, {silent:true});
+    deepModel.set({'foo.bar':2});
     equal(deepModel.hasChanged(), true);
-
-    deepModel.change();
-
-    deepModel.set({'foo.bar':3});
-    equal(deepModel.hasChanged(), false);
 });
 
 
@@ -649,16 +714,11 @@ test('hasChanged(attr): behaves as Model for top level attributes', function() {
 
     equal(deepModel.hasChanged('test'), model.hasChanged('test'));
 
-    model.set({test:2}, {silent:true});
-    deepModel.set({test:2}, {silent:true});
-    equal(deepModel.hasChanged('test'), model.hasChanged('test'));
+    model.set({test:2});
+    deepModel.set({test:2});
 
-    model.change();
-    deepModel.change();
-
-    model.set({test:3});
-    deepModel.set({test:3});
-    equal(deepModel.hasChanged('test'), model.hasChanged('test'));
+    deepEqual(model.hasChanged('test'), true);
+    deepEqual(deepModel.hasChanged('test'), true);
 });
 
 
@@ -669,106 +729,13 @@ test('hasChanged(attr): with deep attributes', function() {
 
     equal(deepModel.hasChanged('foo.bar'), false);
 
-    deepModel.set({'foo.bar':2}, {silent:true});
+    deepModel.set({'foo.bar':2});
     equal(deepModel.hasChanged('foo.bar'), true);
-
-    deepModel.change();
-
-    deepModel.set({'foo.bar':3});
-    equal(deepModel.hasChanged('foo.bar'), false);
 });
 
-test("change(): triggers model change:[attribute] events when silently changing values", function() {
-    (function() {
-        var model = create();
-
-        var triggered = false;
-
-        model.bind('change:id', function(model, val) {
-            equal(val, 456);
-
-            triggered = true;
-        });
-
-        model.set({ id: 456 }, {silent: true});
-
-        //Check callback did not run
-        ok(!triggered);
-
-        model.change();
-
-        //Check callbacks ran
-        ok(triggered);
-    })();
-
-
-    (function() {
-        var model = create();
-
-        var triggered1 = triggered2 = false;
-
-        model.on('change:user.name.first', function(model, val) {
-            equal(val, 'Lana');
-
-            triggered1 = true;
-        });
-
-        model.bind('change:user.name.last', function(model, val) {
-            equal(val, 'Kang');
-
-            triggered2 = true;
-        });
-
-        model.set({
-            'user.name.first': 'Lana',
-            'user.name.last':  'Kang'
-        }, {silent: true});
-
-        //Check callbacks didn't run
-        ok(!triggered1);
-        ok(!triggered2);
-
-        model.change();
-
-        //Check callbacks ran
-        ok(triggered1);
-        ok(triggered2);
-    })();
-
-
-    //Check only expected change events are running
-    (function() {
-        var model = create();
-
-        var triggeredEvents = [];
-
-        model.bind('all', function(changedAttr, model, val) {
-            triggeredEvents.push(changedAttr);
-        });
-
-        model.set({
-            'id': 456,
-            'user.name.first': 'Lana'
-        }, {silent: true});
-
-        // Check callbacks didn't run
-        deepEqual(triggeredEvents, []);
-
-        model.change();
-
-        //Check callbacks ran
-        deepEqual(triggeredEvents, [
-            'change:id',
-            'change:user.name.first',
-            'change:user.name.*',
-            'change:user.*',
-            'change'
-        ]);
-    })();
-});
 
 test("defaults: with deep attributes", function() {
-    DefaultsModel = Backbone.DeepModel.extend({
+    var DefaultsModel = Backbone.DeepModel.extend({
         defaults: {
             details: {
                 name: {
