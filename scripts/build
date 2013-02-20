@@ -3,6 +3,10 @@
 var builder = require('buildify'),
     path = require('path');
 
+var templateData = {
+  version: '0.10.0'
+};
+
 var baseDir = __dirname + '/..',
     sourceDir = baseDir + '/src',
     outputDir = baseDir + '/distribution';
@@ -16,6 +20,7 @@ var fileList = [
 //Concatenate the main files
 builder(baseDir)
   .concat(fileList)
+  .wrap('scripts/template.js', templateData)
   .save('distribution/deep-model.js')
   .uglify()
   .save('distribution/deep-model.min.js');
