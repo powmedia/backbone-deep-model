@@ -759,3 +759,21 @@ test("defaults: with deep attributes", function() {
     equal(model.get('details.name.last'), 'Smith');
     equal(model.get('details.name.initial'), 'Z');
 });
+
+test("defaults: with no initial attributes", function() {
+    DefaultsModel = Backbone.DeepModel.extend({
+        defaults: {
+            details: {
+                name: {
+                    last: 'Smith',
+                    initial: 'J'
+                }
+            }
+        }
+    });
+
+    var model = new DefaultsModel();
+
+    equal(model.get('details.name.last'), 'Smith');
+    equal(model.get('details.name.initial'), 'J');
+});
