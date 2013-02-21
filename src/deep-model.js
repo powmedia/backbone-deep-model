@@ -12,6 +12,7 @@
     }
 }(function(_, Backbone) {
     
+    // FROM backbone-nested
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
      * e.g. { "level1.level2": "value" }
@@ -68,6 +69,19 @@
       return path;
     }
 
+    /**
+     *  converts an array of path segments into a string path.
+     *  examples:
+     *   r = createAttrString([ 'accounts', 4, 'address', 'city']) // r is 'accounts[4].address.city'
+     */
+    function createAttrStr (attrPath) {
+      var attrStr = attrPath[0];
+      _.each(_.rest(attrPath), function(attr){
+        attrStr += _.isNumber(attr) ? ('[' + attr + ']') : ('.' + attr);
+      });
+      return attrStr;
+    }
+
     // adapted using code from backbone-nested
     /**
      * @param {Object}  Object to fetch attribute from
@@ -97,8 +111,8 @@
      * @param {Object} [options]          Options
      * @param {Boolean} [options.unset]   Whether to delete the value
      */
-    function setNested(obj, path, newValue, opts) {
-      opts = opts || {};
+    function setNested(obj, path, newValue, options) {
+      options = options || {};
 
       // Backbone 0.9.0+ syntax: `model.set(key, val)` - convert the key to an attribute path
       var attrP = attrPath(path);
@@ -110,7 +124,7 @@
         var attr = _.last(path);
         if (path.length === fullPathLength){
           // reached the attribute to be set 
-          if (opts.unset){
+          if (options.unset){
             delete val[attr];     // unset the value
           } else {
             
@@ -167,6 +181,58 @@
             this.changed = {};
             this.initialize.apply(this, arguments);
         },
+
+        // taken from backbone-nested
+        /**
+         * add an element to an array
+         */
+        add: function(attrStr, value, options){
+          var current = this.get(attrStr);
+          if (!_.isArray(current)) throw new Error('current value is not an array');
+          return this.set(attrStr + '[' + current.length + ']', value, options);
+        },
+
+        // taken from backbone-nested
+        /**
+         * remove an element from an array
+         */
+        remove: function(attrStr, options){
+          options = options || {};
+
+          var attrP = attrPath(attrStr),
+            aryPath = _.initial(attrP),
+            val = this.get(aryPath),
+            i = _.last(attrP);
+
+          if (!_.isArray(val)){
+            throw new Error("remove() must be called on a nested array");
+          }
+
+          // only trigger if an element is actually being removed
+          var trigger = !options.silent && (val.length >= i + 1),
+            oldEl = val[i];
+
+          // remove the element from the array
+          val.splice(i, 1);
+          options.silent = true; // Triggers should only be fired in trigger section below
+
+          // Mike: get the string path of the object with the removed item so we can set it's new value
+          attrStr = createAttrStr(aryPath);
+        
+          this.set(attrStr, val, options);
+
+          if (trigger){
+            this.trigger('remove:' + attrStr, this, oldEl);
+            for (var aryCount = aryPath.length; aryCount >= 1; aryCount--) {
+              attrStr = createAttrStr(_.first(aryPath, aryCount));
+              this.trigger('change:' + attrStr, this, oldEl);
+            }
+            this.trigger('change', this, oldEl);
+          }
+
+          return this;
+        },
+
 
         // Return a copy of the model's `attributes` object.
         toJSON: function(options) {
