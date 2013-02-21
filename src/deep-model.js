@@ -182,13 +182,24 @@
             this.initialize.apply(this, arguments);
         },
 
-        // taken from backbone-nested
+        // taken and modified from backbone-nested
         /**
          * add an element to an array
          */
         add: function(attrStr, value, options){
+          options = options || {};
+
           var current = this.get(attrStr);
           if (!_.isArray(current)) throw new Error('current value is not an array');
+
+          // TODO: trigger add event, but only if validation succeeds...where should this be done?
+          /*
+          // if set succeeded and not silent, should trigger an add event
+          if(!options.silent && model) {
+              this.trigger('add:' + attrStr, model, value);
+          }
+          */
+
           return this.set(attrStr + '[' + current.length + ']', value, options);
         },
 
@@ -394,13 +405,12 @@
           //<custom code>
           return _.deepClone(this._previousAttributes);
           //</custom code>
-        },
+        }
     });
 
 
     //Config; override in your app to customise
     DeepModel.keyPathSeparator = '.';
-
 
     //Exports
     Backbone.DeepModel = DeepModel;
