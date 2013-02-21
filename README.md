@@ -10,16 +10,13 @@ Triggers change events for changes on nested attributes.
 Dependencies
 ============
 
-Backbone >= 0.9.9
-
-`_.deepClone` and `_.deepExtend` mixins.  (See Installation section below).
+Backbone >= 0.9.10
 
 Installation
 ============
 
 1. Include Backbone and it's dependencies in your page/app.
-2. Include `lib/underscore.mixin.deepExtend.js` if you haven't already.
-3. Include `src/backbone-deep-model.js`.
+2. Include `distribution/deep-model.min.js`
 
 Usage
 =====
