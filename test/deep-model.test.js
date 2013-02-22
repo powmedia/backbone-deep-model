@@ -1,5 +1,38 @@
 module("DeepModel");
 
+/*
+bugs:
+* operations that fail validation should not trigger or modify, but they do
+* change events on nested arrays don't fire. Example:
+    calling doc.set({'addresses[0].city': 'New York'})  doesn't fire change:addresses or change:addresses[0]
+* add events on nested arrays don't fire. Example:
+    calling doc.set({ 'addresses[2]': { city: 'Seattle', state: 'WA' } })  doesn't fire add:addresses or change:addresses
+* calling unset doesn't fire events. Example:
+    doc.unset('addresses[1]') doesn't fire remove:addresses or change:addresses
+    
+behaviors that break backbone-nested behavior:
+* no longer accepts attrPath as 1st arg example: model.set(['first', 'name'])
+* different syntax for wildcard events example: doc.set('name.first', 'Bob') won't fire a change:name but it will fire change:name.*
+* I think there's a bug in deepmodel's set implementation causing duplicate events
+  to trigger. Example:
+    doc.set({'name.middle': {
+      initial: 'F',
+      full: 'Frankenfurter'
+    }});
+
+    This causes the following change events to fire:
+        name.middle.initial
+        name.middle.*
+        name.*
+        name.middle.full
+        name.middle.*
+        name.*
+        name.* 
+
+  I think we can probably solve this by delaying change triggers until the end of 
+  the set operation, similar to how @afeld accomplishes this in backbone-nested
+*/
+
 function create() {
     var model = new Backbone.DeepModel({
         id: 123,
@@ -1053,7 +1086,8 @@ test("defaults: with deep attributes", function() {
       changeFirstName = sinon.spy(callback);
 
     doc.bind('change', change);
-    doc.bind('change:name', changeName);
+    //doc.bind('change:name', changeName);  // works in backbone-nested only
+    doc.bind('change:name.*', changeName);  // works in backbone-deepmodel only
     doc.bind('change:name.first', changeFirstName);
 
     doc.set('name.first', 'Bob');
@@ -1072,7 +1106,8 @@ test("defaults: with deep attributes", function() {
     var changeGender = sinon.spy();
     
     doc.bind('change', change);
-    doc.bind('change:name', changeName);
+    //doc.bind('change:name', changeName);  // works in backbone-nested only
+    doc.bind('change:name.*', changeName);  // works in backbone-deepmodel only
     doc.bind('change:name.first', changeNameFirst);
 
     doc.bind('change:name.last', changeNameLast);
@@ -1150,6 +1185,7 @@ test("defaults: with deep attributes", function() {
     sinon.assert.notCalled(changeNameMiddleInitial);
   });
 
+  // TODO: FAILING
   test("change event doesn't fire if validation fails on top level attribute", function() {
     var doc = create2();
     var change = sinon.spy();
@@ -1173,6 +1209,7 @@ test("defaults: with deep attributes", function() {
     sinon.assert.notCalled(changeNameFirst);
   });
 
+  // FAILING
   test("change event doesn't fire if validation fails on deeply nested attribute", function() {
     var doc = create2();
     var change = sinon.spy();
@@ -1231,8 +1268,11 @@ test("defaults: with deep attributes", function() {
     var changeNameFirst = sinon.spy();
 
     doc.bind('change', change);
-    doc.bind('change:name', changeName);
-    doc.bind('change:name.middle', changeNameMiddle);
+
+    doc.bind('change:name.*', changeName);               // only fires in deepmodel
+    doc.bind('change:name.middle.*', changeNameMiddle);  // only fires in deepmodel
+    //doc.bind('change:name', changeName);               // only fires in backbone-nested
+    //doc.bind('change:name.middle', changeNameMiddle);  // only fires in backbone-nested
     doc.bind('change:name.middle.full', changeNameMiddleFull);
 
     doc.bind('change:name.middle.initial', changeNameMiddleInitial);
@@ -1249,9 +1289,9 @@ test("defaults: with deep attributes", function() {
     // Confirm other triggers do not fire
     sinon.assert.notCalled(changeNameMiddleInitial);
     sinon.assert.notCalled(changeNameFirst);
-
   });
 
+  //  FAILING - I think this is because of the overzealous triggering bug
   test("change event on deeply nested attribute with object", function() {
     var doc = create2();
     var change = sinon.spy();
@@ -1262,8 +1302,12 @@ test("defaults: with deep attributes", function() {
     var changeNameFirst = sinon.spy();
     
     doc.bind('change', change);
-    doc.bind('change:name', changeName);
-    doc.bind('change:name.middle', changeNameMiddle);
+
+    doc.bind('change:name.*', changeName);               // only fires in deepmodel
+    doc.bind('change:name.middle.*', changeNameMiddle);  // only fires in deepmodel
+    //doc.bind('change:name', changeName);               // only fires in backbone-nested
+    //doc.bind('change:name.middle', changeNameMiddle);  // only fires in backbone-nested
+
     doc.bind('change:name.middle.initial', changeNameMiddleInitial);
     doc.bind('change:name.middle.full', changeNameMiddleFull);
 
@@ -1273,7 +1317,7 @@ test("defaults: with deep attributes", function() {
       initial: 'F',
       full: 'Frankenfurter'
     }});
-
+    
     // Confirm all triggers fire once that should
     sinon.assert.calledOnce(change);
     sinon.assert.calledOnce(changeName);
@@ -1285,6 +1329,7 @@ test("defaults: with deep attributes", function() {
     sinon.assert.notCalled(changeNameFirst);
   });
 
+    //FAILING
   test("change event on nested array", function() {
     var doc = create2();
     var change = sinon.spy();
@@ -1316,6 +1361,7 @@ test("defaults: with deep attributes", function() {
 
   });
 
+  // FAILING
   test("change+add when adding to array", function() {
     var doc = create2();
     var change = sinon.spy();
@@ -1339,6 +1385,7 @@ test("defaults: with deep attributes", function() {
 
   });
 
+  // FAILING
   test("change+remove when unsetting on array", function() {
     var doc = create2();
     var change = sinon.spy();
@@ -1407,6 +1454,7 @@ test("defaults: with deep attributes", function() {
 
   // ----- CHANGED_ATTRIBUTES --------
 
+  // FAILING
   test("#changedAttributes() should return the attributes for the full path and all sub-paths", function() {
     var doc = create2();
     doc.bind('change', function(){
@@ -1430,6 +1478,7 @@ test("defaults: with deep attributes", function() {
     doc.set({'name.middle.full': 'Limburger'});
   });
 
+  // FAILING
   test("#changedAttributes() should return the attributes for the full path and all sub-paths for conventional set", function() {
     var doc = create2();
     doc.bind('change', function(){
@@ -1474,6 +1523,7 @@ test("defaults: with deep attributes", function() {
     });
   });
   
+  // FAILING
   test("#changedAttributes() should clear the nested attributes between change events", function() {
     var doc = create2();
     doc.set({'name.first': 'Bob'});

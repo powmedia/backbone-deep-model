@@ -12,7 +12,6 @@
     }
 }(function(_, Backbone) {
     
-    // FROM backbone-nested
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
      * e.g. { "level1.level2": "value" }
@@ -321,7 +320,6 @@
                 var key = changes[i];
 
                 this.trigger('change:' + key, this, getNested(current, key), options);
-
                 var fields = key.split(separator);
 
                 //Trigger change events for parent keys with wildcard (*) notation
@@ -351,7 +349,9 @@
         // to silence it.
         clear: function(options) {
           var attrs = {};
+          //<custom code>
           var shallowAttributes = objToPaths(this.attributes);
+          //</custom code>
           for (var key in shallowAttributes) attrs[key] = void 0;
           return this.set(attrs, _.extend({}, options, {unset: true}));
         },
