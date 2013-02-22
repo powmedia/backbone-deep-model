@@ -191,13 +191,12 @@
           var current = this.get(attrStr);
           if (!_.isArray(current)) throw new Error('current value is not an array');
 
-          // TODO: trigger add event, but only if validation succeeds...where should this be done?
-          /*
+          // TODO: only trigger add event if validation succeeds
           // if set succeeded and not silent, should trigger an add event
+          model = this.set(attrStr + '[' + current.length + ']', value, options);
           if(!options.silent && model) {
-              this.trigger('add:' + attrStr, model, value);
+              model.trigger('add:' + attrStr, model, value);
           }
-          */
 
           return this.set(attrStr + '[' + current.length + ']', value, options);
         },
