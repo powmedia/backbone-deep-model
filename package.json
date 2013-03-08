@@ -4,7 +4,11 @@
   "author": {
     "name": "Charles Davison"
   },
-  "version": "0.10.1",
+  "contributors": [
+  	"Aidan Feldman",
+  	"Mike Reinstein"
+  ],
+  "version": "1.0.0",
   "dependencies": {
     "backbone": ">=0.9.10"
   }

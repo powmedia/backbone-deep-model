@@ -43,73 +43,117 @@
         return ret;
     }
 
+    // FROM backbone-nested
     /**
-     * @param {Object}  Object to fetch attribute from
-     * @param {String}  Object path e.g. 'user.name'
-     * @return {Mixed}
+     *  converts a string path into an array of path segments.
+     *  examples:
+     *   r = attrPath('person[2].weight')   // r is [ 'person', 2, 'weight' ]
+     *   r = attrPath('embedder.another')   // r is [ 'embedder', 'another' ]
      */
-    function getNested(obj, path, return_exists) {
-        var separator = DeepModel.keyPathSeparator;
-
-        var fields = path.split(separator);
-        var result = obj;
-        return_exists || (return_exists === false);
-        for (var i = 0, n = fields.length; i < n; i++) {
-            if (return_exists && !_.has(result, fields[i])) {
-                return false;
-            }
-            result = result[fields[i]];
-
-            if (result == null && i < n - 1) {
-                result = {};
-            }
-            
-            if (typeof result === 'undefined') {
-                if (return_exists)
-                {
-                    return true;
-                }
-                return result;
-            }
-        }
-        if (return_exists)
-        {
-            return true;
-        }
-        return result;
+    function attrPath (attrStrOrPath) {
+      var path, pattern;
+      if (_.isString(attrStrOrPath)){
+        // modified the regex to support DeepModel.keyPathSeparator instead of hardcoding .
+        pattern = new RegExp('[^\\'+ DeepModel.keyPathSeparator +'\\[\\]]+', 'g')
+        //pattern = /[^\.\[\]]+/g
+        // TODO this parsing can probably be more efficient
+        path = (attrStrOrPath === '') ? [''] : attrStrOrPath.match(pattern);
+        path = _.map(path, function(val){
+          // convert array accessors to numbers
+          return val.match(/^\d+$/) ? parseInt(val, 10) : val;
+        });
+      } else {
+        path = attrStrOrPath;
+      }
+      return path;
     }
 
+    /**
+     *  converts an array of path segments into a string path.
+     *  examples:
+     *   r = createAttrString([ 'accounts', 4, 'address', 'city']) // r is 'accounts[4].address.city'
+     */
+    function createAttrStr (attrPath) {
+      var attrStr = attrPath[0];
+      _.each(_.rest(attrPath), function(attr){
+        attrStr += _.isNumber(attr) ? ('[' + attr + ']') : ('.' + attr);
+      });
+      return attrStr;
+    }
+
+    // adapted using code from backbone-nested
+    /**
+     * @param {Object}  Object to fetch attribute from
+     * @param {String}  Object path e.g., 'user.name'
+     * @return {Mixed}
+     */
+    function getNested(obj, path) {
+      var attrP = attrPath(path),
+          result;
+
+      walkPath(obj, attrP, function(val, path){
+        var attr = _.last(path);
+        if (path.length === attrP.length){
+          // attribute found
+          result = val[attr];
+        }
+      });
+
+      return result;
+    }
+
+    // adapted using code from backbone-nested
     /**
      * @param {Object} obj                Object to fetch attribute from
      * @param {String} path               Object path e.g. 'user.name'
+     * @param {Mixed} val                 Value to set
      * @param {Object} [options]          Options
      * @param {Boolean} [options.unset]   Whether to delete the value
-     * @param {Mixed}                     Value to set
      */
-    function setNested(obj, path, val, options) {
-        options = options || {};
+    function setNested(obj, path, newValue, options) {
+      options = options || {};
 
-        var separator = DeepModel.keyPathSeparator;
+      // Backbone 0.9.0+ syntax: `model.set(key, val)` - convert the key to an attribute path
+      var attrP = attrPath(path);
+      
+      var fullPathLength = attrP.length;
+      var newAttrs = obj;
 
-        var fields = path.split(separator);
-        var result = obj;
-        for (var i = 0, n = fields.length; i < n && result !== undefined ; i++) {
-            var field = fields[i];
-
-            //If the last in the path, set the value
-            if (i === n - 1) {
-                options.unset ? delete result[field] : result[field] = val;
-            } else {
-                //Create the child object if it doesn't exist, or isn't an object
-                if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
-                    result[field] = {};
-                }
-
-                //Move onto the next part of the path
-                result = result[field];
-            }
+      walkPath(newAttrs, attrP, function(val, path){
+        var attr = _.last(path);
+        if (path.length === fullPathLength){
+          // reached the attribute to be set 
+          if (options.unset){
+            delete val[attr];     // unset the value
+          } else {
+            
+            val[attr] = newValue; // Set the new value
+          }
+        } else if (!val[attr]){
+          if (_.isNumber(attr)){
+            val[attr] = [];
+          } else {
+            val[attr] = {};
+          }
         }
+      });
     }
+
+    // FROM backbone-nested
+    function walkPath (obj, attrPath, callback, scope){
+      var val = obj,
+          childAttr;
+
+      // walk through the child attributes
+      for (var i = 0; i < attrPath.length; i++){
+        callback.call(scope || this, val, attrPath.slice(0, i + 1));
+
+        childAttr = attrPath[i];
+        val = val[childAttr];
+        if (!val) break; // at the leaf
+      }
+    }
+
 
     function deleteNested(obj, path) {
       setNested(obj, path, null, { unset: true });
@@ -136,6 +180,68 @@
             this.changed = {};
             this.initialize.apply(this, arguments);
         },
+
+        // taken and modified from backbone-nested
+        /**
+         * add an element to an array
+         */
+        add: function(attrStr, value, options){
+          options = options || {};
+
+          var current = this.get(attrStr);
+          if (!_.isArray(current)) throw new Error('current value is not an array');
+
+          // TODO: only trigger add event if validation succeeds
+          // if set succeeded and not silent, should trigger an add event
+          model = this.set(attrStr + '[' + current.length + ']', value, options);
+          if(!options.silent && model) {
+              model.trigger('add:' + attrStr, model, value);
+          }
+
+          return this.set(attrStr + '[' + current.length + ']', value, options);
+        },
+
+        // taken from backbone-nested
+        /**
+         * remove an element from an array
+         */
+        remove: function(attrStr, options){
+          options = options || {};
+
+          var attrP = attrPath(attrStr),
+            aryPath = _.initial(attrP),
+            val = this.get(aryPath),
+            i = _.last(attrP);
+
+          if (!_.isArray(val)){
+            throw new Error("remove() must be called on a nested array");
+          }
+
+          // only trigger if an element is actually being removed
+          var trigger = !options.silent && (val.length >= i + 1),
+            oldEl = val[i];
+
+          // remove the element from the array
+          val.splice(i, 1);
+          options.silent = true; // Triggers should only be fired in trigger section below
+
+          // Mike: get the string path of the object with the removed item so we can set it's new value
+          attrStr = createAttrStr(aryPath);
+        
+          this.set(attrStr, val, options);
+
+          if (trigger){
+            this.trigger('remove:' + attrStr, this, oldEl);
+            for (var aryCount = aryPath.length; aryCount >= 1; aryCount--) {
+              attrStr = createAttrStr(_.first(aryPath, aryCount));
+              this.trigger('change:' + attrStr, this, oldEl);
+            }
+            this.trigger('change', this, oldEl);
+          }
+
+          return this;
+        },
+
 
         // Return a copy of the model's `attributes` object.
         toJSON: function(options) {
@@ -213,7 +319,6 @@
                 var key = changes[i];
 
                 this.trigger('change:' + key, this, getNested(current, key), options);
-
                 var fields = key.split(separator);
 
                 //Trigger change events for parent keys with wildcard (*) notation
@@ -243,7 +348,9 @@
         // to silence it.
         clear: function(options) {
           var attrs = {};
+          //<custom code>
           var shallowAttributes = objToPaths(this.attributes);
+          //</custom code>
           for (var key in shallowAttributes) attrs[key] = void 0;
           return this.set(attrs, _.extend({}, options, {unset: true}));
         },
@@ -297,13 +404,12 @@
           //<custom code>
           return _.deepClone(this._previousAttributes);
           //</custom code>
-        },
+        }
     });
 
 
     //Config; override in your app to customise
     DeepModel.keyPathSeparator = '.';
-
 
     //Exports
     Backbone.DeepModel = DeepModel;
