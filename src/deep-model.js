@@ -297,7 +297,7 @@
           //<custom code>
           return _.deepClone(this._previousAttributes);
           //</custom code>
-        },
+        }
     });
 
 
