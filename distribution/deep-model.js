@@ -1,7 +1,7 @@
 /*jshint expr:true eqnull:true */
 /**
  *
- * Backbone.DeepModel v0.10.1
+ * Backbone.DeepModel v0.10.2
  *
  * Copyright (c) 2013 Charles Davison, Pow Media Ltd
  *
@@ -415,7 +415,7 @@
           //<custom code>
           return _.deepClone(this._previousAttributes);
           //</custom code>
-        },
+        }
     });
 
 
@@ -432,3 +432,4 @@
     return Backbone;
 
 }));
+

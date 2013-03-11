@@ -4,7 +4,7 @@ var builder = require('buildify'),
     path = require('path');
 
 var templateData = {
-  version: '0.10.1'
+  version: require('../package.json').version
 };
 
 var baseDir = __dirname + '/..',
