@@ -1,7 +1,7 @@
 /*jshint expr:true eqnull:true */
 /**
  *
- * Backbone.DeepModel v0.10.3
+ * Backbone.DeepModel v0.10.4
  *
  * Copyright (c) 2013 Charles Davison, Pow Media Ltd
  *

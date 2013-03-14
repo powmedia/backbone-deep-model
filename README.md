@@ -78,7 +78,7 @@ Contributors
 Changelog
 =========
 
-0.10.3:
+0.10.4:
 - Fix #68 Model or collection in attributes are eliminated when defaults are used
 
 0.10.0:
