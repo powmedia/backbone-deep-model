@@ -1,7 +1,7 @@
 /*jshint expr:true eqnull:true */
 /**
  *
- * Backbone.DeepModel v0.10.2
+ * Backbone.DeepModel v0.10.3
  *
  * Copyright (c) 2013 Charles Davison, Pow Media Ltd
  *
@@ -21,6 +21,9 @@
   deepClone = function(obj) {
     var func, isArr;
     if (!_.isObject(obj) || _.isFunction(obj)) {
+      return obj;
+    }
+    if (obj instanceof Backbone.Collection || obj instanceof Backbone.Model) {
       return obj;
     }
     if (_.isDate(obj)) {

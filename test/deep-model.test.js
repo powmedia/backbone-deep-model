@@ -759,3 +759,16 @@ test("defaults: with deep attributes", function() {
     equal(model.get('details.name.last'), 'Smith');
     equal(model.get('details.name.initial'), 'Z');
 });
+
+
+test('defaults: does not cause a problem with a collection in an attribute', function() {
+    var Model = Backbone.DeepModel.extend({
+        defaults: {
+            foo: 'bar'
+        }
+    });
+
+    var model = new Model({ collection: new Backbone.Collection });
+
+    ok(model.get('collection') instanceof Backbone.Collection);
+});

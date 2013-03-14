@@ -78,6 +78,12 @@ Contributors
 Changelog
 =========
 
+0.10.3:
+- Fix #68 Model or collection in attributes are eliminated when defaults are used
+
+0.10.0:
+- Support Backbone 0.9.10
+
 0.9.0:
 - Support Backbone 0.9.9 (mattyway)
 - Add support for deep model defaults (mattyway)
