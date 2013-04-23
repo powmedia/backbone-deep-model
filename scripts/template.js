@@ -9,4 +9,18 @@
  * Licensed under the MIT License
  */
 
-{{body}}
+;(function(factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD
+        define(['underscore', 'backbone'], factory);
+    } else {
+        // globals
+        factory(_, Backbone);
+    }
+}(function(_, Backbone) {
+
+    {{body}}
+
+    return Backbone;
+}));
+
