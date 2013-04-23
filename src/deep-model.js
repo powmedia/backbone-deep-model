@@ -225,6 +225,25 @@
                 }
                 //</custom code>
               }
+              //<custom code>
+              // Flag triggered events so that they are not triggered more then once.
+              var triggered = {};
+              _.each(changes, function(key) {
+                  
+                var fields = key.split(separator);
+
+                //Trigger change events for parent keys without wildcard (*) notation.
+
+                for(var n = fields.length - 1; n > 0; n--) {
+                  var parentKey = _.first(fields, n).join(separator);
+
+                    if (!triggered[parentKey]) {
+                        this.trigger('change:' + parentKey, this, getNested(current, parentKey), options);
+                    }
+                    triggered[parentKey] = true;
+                }
+              }, this);
+              //</custom code>                
             }
 
             if (changing) return this;
