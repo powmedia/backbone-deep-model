@@ -24,6 +24,8 @@
             separator = DeepModel.keyPathSeparator;
 
         for (var key in obj) {
+            if (!obj.hasOwnProperty(key)) continue;
+            
             var val = obj[key];
 
             if (val && val.constructor === Object && !_.isEmpty(val)) {
@@ -31,6 +33,8 @@
                 var obj2 = objToPaths(val);
 
                 for (var key2 in obj2) {
+                    if (!obj2.hasOwnProperty(key2)) continue;
+                    
                     var val2 = obj2[key2];
 
                     ret[key + separator + key2] = val2;
