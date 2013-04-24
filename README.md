@@ -46,6 +46,10 @@ Example code:
         console.log(val);
     });
 
+    //... and all parent attributes as well
+    model.bind('change:user.name', function(model, val) { console.log(val); });
+    model.bind('change:user', function(model, val) { console.log(val); });
+
     //Wildcards are supported
     model.bind('change:user.*', function() {});
     

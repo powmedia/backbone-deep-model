@@ -262,6 +262,8 @@ test("set: Triggers model change:[attribute] events", function() {
             'change:user.name.first',
             'change:user.name.*',
             'change:user.*',
+            'change:user.name',
+            'change:user',
             'change'
         ]);
     })();
@@ -503,6 +505,8 @@ test("unset: Triggers model change:[attribute] events", function() {
             'change:user.name.first',
             'change:user.name.*',
             'change:user.*',
+            'change:user.name',
+            'change:user',
             'change'
         ]);
     })();
