@@ -229,6 +229,13 @@
                     alreadyTriggered[wildcardKey] = true; // * @restorer
                     this.trigger('change:' + wildcardKey, this, getNested(current, parentKey), options);
                   } // * @restorer
+
+                  // + @restorer
+                  if (!alreadyTriggered.hasOwnProperty(parentKey) || !alreadyTriggered[parentKey]) {
+                    alreadyTriggered[parentKey] = true;
+                    this.trigger('change:' + parentKey, this, getNested(current, parentKey), options);
+                  }
+                  // - @restorer
                 }
                 //</custom code>
               }
