@@ -140,19 +140,19 @@ test('set: Sets a single value - nested', function() {
 
 test('set: Sets a single value inside null to create an object', function() {
    var model = create();
-   
+
    model.set('user', null);
    model.set('user.type', 'Admin');
-   
+
    equal(model.attributes.user.type, 'Admin');
 });
 
 test('set: Sets a single value inside null to create an object when given an object', function() {
    var model = create();
-   
+
    model.set('user', null);
    model.set({user: {type: 'Admin'}});
-   
+
    equal(model.attributes.user.type, 'Admin');
 });
 
@@ -261,7 +261,9 @@ test("set: Triggers model change:[attribute] events", function() {
             'change:id',
             'change:user.name.first',
             'change:user.name.*',
+            'change:user.name', // * @restorer
             'change:user.*',
+            'change:user', // * @restorer
             'change'
         ]);
     })();
@@ -502,7 +504,9 @@ test("unset: Triggers model change:[attribute] events", function() {
             'change',
             'change:user.name.first',
             'change:user.name.*',
+            'change:user.name', // * @restorer
             'change:user.*',
+            'change:user', // * @restorer
             'change'
         ]);
     })();
@@ -511,7 +515,7 @@ test("unset: Triggers model change:[attribute] events", function() {
 
 test('hasChanged(): matches Model behaviour - when not changed', function() {
     var model = new Backbone.Model({ foo: 'bar' });
-    
+
     var deepModel = new Backbone.DeepModel({
         foo: 'bar',
         user: {
@@ -528,7 +532,7 @@ test('hasChanged(): matches Model behaviour - when not changed', function() {
 
 test('hasChanged(): matches Model behaviour - when changed', function() {
     var model = new Backbone.Model({ foo: 'bar' });
-    
+
     var deepModel = new Backbone.DeepModel({
         foo: 'bar',
         user: {
@@ -547,7 +551,7 @@ test('hasChanged(): matches Model behaviour - when changed', function() {
 
 test('hasChanged(attr): matches Model behaviour - when not changed', function() {
     var model = new Backbone.Model({ foo: 'bar' });
-    
+
     var deepModel = new Backbone.DeepModel({
         foo: 'bar',
         user: {
@@ -567,7 +571,7 @@ test('hasChanged(attr): matches Model behaviour - when not changed', function() 
 
 test('hasChanged(attr): matches Model behaviour - when changed', function() {
     var model = new Backbone.Model({ foo: 'bar' });
-    
+
     var deepModel = new Backbone.DeepModel({
         foo: 'bar',
         user: {
@@ -640,7 +644,7 @@ test('changedAttributes(): behaves as Model for top level properties', function(
 
 test('changedAttributes(): with deep properties', function() {
     var deepModel = new Backbone.DeepModel({
-        foo: { baz: 1 }, 
+        foo: { baz: 1 },
         bar: { baz: 1 }
     });
 
@@ -668,7 +672,7 @@ test('changedAttributes(diff): behaves as Model for top level properties', funct
 
 test('changedAttributes(diff): with deep properties', function() {
     var deepModel = new Backbone.DeepModel({
-        foo: { baz: 1 }, 
+        foo: { baz: 1 },
         bar: { baz: 1 }
     });
 
@@ -747,7 +751,7 @@ test("defaults: with deep attributes", function() {
     });
 
     var model = new DefaultsModel({
-        details: { 
+        details: {
             name: {
                 first: 'John',
                 initial: 'Z'
@@ -772,3 +776,168 @@ test('defaults: does not cause a problem with a collection in an attribute', fun
 
     ok(model.get('collection') instanceof Backbone.Collection);
 });
+
+// + @restorer
+test("set: Trigger change events only once", function() {
+    (function() {
+        var model = create();
+
+        var triggeredEvents = [];
+
+        model.bind('all', function(changedAttr, model, val) {
+            triggeredEvents.push(changedAttr);
+        });
+
+        model.set({
+            'id': 456,
+            'user.name.first': 'Lana',
+            'user.name.last': 'Kang'
+        });
+
+        //Check callbacks ran
+        deepEqual(triggeredEvents, [
+            'change:id',
+            'change:user.name.first',
+            'change:user.name.*',
+            'change:user.name',
+            'change:user.*',
+            'change:user',
+            'change:user.name.last',
+            'change'
+        ]);
+    })();
+});
+
+test('set: Trigger model change:[attribute] event for parent keys (like wildcard)', function() {
+    (function() {
+        var model = create();
+        var triggered = false;
+
+        model.on('change:user', function(model, val) {
+            deepEqual(val, {});
+            triggered = true;
+        });
+
+        model.set('user', {});
+        ok(triggered);
+    })();
+
+    (function() {
+        var model = create();
+        var triggered = false;
+
+        model.on('change:user', function(model, val) {
+            deepEqual(val, null);
+            triggered = true;
+        });
+
+        model.set('user', null);
+        ok(triggered);
+    })();
+
+    (function() {
+        var model = create();
+        var triggered = false;
+
+        model.on('change:user', function(model, val) {
+            ok(typeof(val) === 'undefined');
+            triggered = true;
+        });
+
+        model.set('user', void 0, true);
+        ok(triggered);
+    })();
+
+    (function() {
+        var model = new Backbone.DeepModel({
+            id: 123,
+            user: {}
+        });
+
+        var triggered = false;
+
+        model.on('change:user', function(model, val) {
+            deepEqual(val, {
+                type: 'Spy',
+                name: {
+                    first: 'Sterling',
+                    last: 'Archer'
+                }
+            });
+
+            triggered = true;
+        });
+
+        model.set('user', {
+            type: 'Spy',
+            name: {
+                first: 'Sterling',
+                last: 'Archer'
+            }
+        });
+
+        ok(triggered);
+    })();
+
+    (function() {
+        var model = new Backbone.DeepModel({
+            id: 123,
+            user: null
+        });
+
+        var triggered = false;
+
+        model.on('change:user', function(model, val) {
+            deepEqual(val, {
+                type: 'Spy',
+                name: {
+                    first: 'Sterling',
+                    last: 'Archer'
+                }
+            });
+
+            triggered = true;
+        });
+
+        model.set('user', {
+            type: 'Spy',
+            name: {
+                first: 'Sterling',
+                last: 'Archer'
+            }
+        });
+
+        ok(triggered);
+    })();
+
+    (function() {
+        var model = new Backbone.DeepModel({
+            id: 123
+        });
+
+        var triggered = false;
+
+        model.on('change:user', function(model, val) {
+            deepEqual(val, {
+                type: 'Spy',
+                name: {
+                    first: 'Sterling',
+                    last: 'Archer'
+                }
+            });
+
+            triggered = true;
+        });
+
+        model.set('user', {
+            type: 'Spy',
+            name: {
+                first: 'Sterling',
+                last: 'Archer'
+            }
+        });
+
+        ok(triggered);
+    })();
+});
+// - @restorer
