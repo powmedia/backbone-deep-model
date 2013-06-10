@@ -940,4 +940,11 @@ test('set: Trigger model change:[attribute] event for parent keys (like wildcard
         ok(triggered);
     })();
 });
+test('get: calls getters on backbone object rather than accessing object directly', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'value';
+    model.set({ nested: new Backbone.DeepModel({ property: value }) });
+
+    strictEqual(model.get('nested.property'), value);
+});
 // - @restorer

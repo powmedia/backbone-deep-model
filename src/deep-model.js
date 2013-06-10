@@ -58,7 +58,12 @@
             if (return_exists && !_.has(result, fields[i])) {
                 return false;
             }
-            result = result[fields[i]];
+            if (result instanceof Backbone.Model) {
+                result = result.get(fields[i]);
+            }
+            else {
+                result = result[fields[i]];
+            }
 
             if (result == null && i < n - 1) {
                 result = {};
