@@ -981,6 +981,22 @@ test('set: calls set method on backbone object rather than changing attributes h
 
     ok(setCalled, 'set function called on nested object rather than modifying attributes directly');
 });
+
+test('set: silent param propagated to nested models set options with expanded syntax', function() {
+    var model = new Backbone.DeepModel();
+    var setCalledWithSilent = false;
+    var CustomModel = Backbone.DeepModel.extend({
+        set: function (key, val, options) {
+            setCalledWithSilent = options && options.silent;
+        }
+    });
+    model.set('nested', new CustomModel());
+
+    model.set('nested.property', 'value', { silent: true });
+
+    strictEqual(setCalledWithSilent, true, 'set function called on nested object with silent attribute passed');
+});
+
 test('get: calls getters on backbone object rather than accessing object directly', function() {
     var model = new Backbone.DeepModel();
     var value = 'value';

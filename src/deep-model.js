@@ -107,7 +107,7 @@
                     options.unset ? result.unset(filed, options) : result.set(field, val, options);
                 }
                 else {
-                options.unset ? delete result[field] : result[field] = val;
+                    options.unset ? delete result[field] : result[field] = val;
                 }
             } else {
                 //Create the child object if it doesn't exist, or isn't an object
@@ -121,13 +121,14 @@
                     result = result.get(field);
                 }
                 else {
-                result = result[field];
+                    result = result[field];
+                }
             }
         }
     }
 
-    function deleteNested(obj, path) {
-      setNested(obj, path, null, { unset: true });
+    function deleteNested(obj, path, options) {
+      setNested(obj, path, null, _.extend(options || {}, { unset: true }));
     }
 
     var DeepModel = Backbone.Model.extend({
@@ -209,11 +210,11 @@
               //<custom code>: Using getNested, setNested and deleteNested
               if (!_.isEqual(getNested(current, attr), val)) changes.push(attr);
               if (!_.isEqual(getNested(prev, attr), val)) {
-                setNested(this.changed, attr, val);
+                setNested(this.changed, attr, val, options);
               } else {
                 deleteNested(this.changed, attr);
               }
-              unset ? deleteNested(current, attr) : setNested(current, attr, val);
+              unset ? deleteNested(current, attr) : setNested(current, attr, val, options);
               //</custom code>
             }
 
