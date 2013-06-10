@@ -947,4 +947,21 @@ test('get: calls getters on backbone object rather than accessing object directl
 
     strictEqual(model.get('nested.property'), value);
 });
+
+test('get: calls get method on backbone object rather than accessing attributes hash', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'value';
+    var getCalled = false;
+    var CustomModel = Backbone.DeepModel.extend({
+        get: function () {
+            getCalled = true;
+        }
+    });
+    model.set({ nested: new CustomModel() });
+
+    model.get('nested.property');
+
+    ok(getCalled, 'get function called on nested object rather than accessing attributes directly');
+});
+
 // - @restorer
