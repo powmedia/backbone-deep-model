@@ -103,7 +103,12 @@
 
             //If the last in the path, set the value
             if (i === n - 1) {
+                if (result instanceof Backbone.Model) {
+                    options.unset ? result.unset(filed, options) : result.set(field, val, options);
+                }
+                else {
                 options.unset ? delete result[field] : result[field] = val;
+                }
             } else {
                 //Create the child object if it doesn't exist, or isn't an object
                 if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
@@ -111,6 +116,11 @@
                 }
 
                 //Move onto the next part of the path
+                //Jump into the Backbone object's attributes instead of its internal properties
+                if (result instanceof Backbone.Model) {
+                    result = result.get(field);
+                }
+                else {
                 result = result[field];
             }
         }
