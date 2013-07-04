@@ -40,7 +40,7 @@ Example code:
             { name: 'Cyrril' }
         ]
     });
-    
+
     //You can bind to change events on nested attributes
     model.bind('change:user.name.first', function(model, val) {
         console.log(val);
@@ -48,14 +48,14 @@ Example code:
 
     //Wildcards are supported
     model.bind('change:user.*', function() {});
-    
+
     //Use set with a path name for nested attributes
     //NOTE you must you quotation marks around the key name when using a path
     model.set({
         'user.name.first': 'Lana',
         'user.name.last':  'Kang'
     });
-    
+
     //Use get() with path names so you can create getters later
     console.log(model.get('user.type'));    // 'Spy'
 
@@ -77,6 +77,9 @@ Contributors
 
 Changelog
 =========
+
+0.10.5:
+- Trigger change events only once and trigger change event for parent keys (like wildcard)
 
 0.10.4:
 - Fix #68 Model or collection in attributes are eliminated when defaults are used
