@@ -132,7 +132,7 @@
         factory(_, Backbone);
     }
 }(function(_, Backbone) {
-    
+
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
      * e.g. { "level1.level2": "value" }
@@ -184,7 +184,7 @@
             if (result == null && i < n - 1) {
                 result = {};
             }
-            
+
             if (typeof result === 'undefined') {
                 if (return_exists)
                 {
@@ -263,6 +263,11 @@
           return _.deepClone(this.attributes);
         },
 
+        // Returns a flat representation of the model, deep properties are returned as dotted paths.
+        toFlatJSON: function () {
+          return objToPaths(this.attributes);
+        },
+
         // Override get
         // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
         get: function(attr) {
@@ -274,7 +279,7 @@
         set: function(key, val, options) {
             var attr, attrs, unset, changes, silent, changing, prev, current;
             if (key == null) return this;
-            
+
             // Handle both `"key", value` and `{key: value}` -style arguments.
             if (typeof key === 'object') {
               attrs = key;
@@ -284,7 +289,7 @@
             }
 
             options || (options = {});
-            
+
             // Run validation.
             if (!this._validate(attrs, options)) return false;
 
@@ -329,11 +334,15 @@
 
               //<custom code>
               var separator = DeepModel.keyPathSeparator;
+              var alreadyTriggered = {}; // * @restorer
 
               for (var i = 0, l = changes.length; i < l; i++) {
                 var key = changes[i];
 
-                this.trigger('change:' + key, this, getNested(current, key), options);
+                if (!alreadyTriggered.hasOwnProperty(key) || !alreadyTriggered[key]) { // * @restorer
+                  alreadyTriggered[key] = true; // * @restorer
+                  this.trigger('change:' + key, this, getNested(current, key), options);
+                } // * @restorer
 
                 var fields = key.split(separator);
 
@@ -342,7 +351,17 @@
                   var parentKey = _.first(fields, n).join(separator),
                       wildcardKey = parentKey + separator + '*';
 
-                  this.trigger('change:' + wildcardKey, this, getNested(current, parentKey), options);
+                  if (!alreadyTriggered.hasOwnProperty(wildcardKey) || !alreadyTriggered[wildcardKey]) { // * @restorer
+                    alreadyTriggered[wildcardKey] = true; // * @restorer
+                    this.trigger('change:' + wildcardKey, this, getNested(current, parentKey), options);
+                  } // * @restorer
+
+                  // + @restorer
+                  if (!alreadyTriggered.hasOwnProperty(parentKey) || !alreadyTriggered[parentKey]) {
+                    alreadyTriggered[parentKey] = true;
+                    this.trigger('change:' + parentKey, this, getNested(current, parentKey), options);
+                  }
+                  // - @restorer
                 }
                 //</custom code>
               }
@@ -388,7 +407,7 @@
           //</custom code>
 
           var old = this._changing ? this._previousAttributes : this.attributes;
-          
+
           //<custom code>
           diff = objToPaths(diff);
           old = objToPaths(old);
@@ -431,7 +450,7 @@
 
     //For use in NodeJS
     if (typeof module != 'undefined') module.exports = DeepModel;
-    
+
     return Backbone;
 
 }));
