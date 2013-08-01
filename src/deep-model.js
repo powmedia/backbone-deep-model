@@ -142,6 +142,11 @@
           return _.deepClone(this.attributes);
         },
 
+        // Returns a flat representation of the model, deep properties are returned as dotted paths.
+        toFlatJSON: function () {
+          return objToPaths(this.attributes);
+        },
+
         // Override get
         // Supports nested attributes via the syntax 'obj.attr' e.g. 'author.user.name'
         get: function(attr) {
