@@ -175,7 +175,7 @@
             this._changing  = true;
 
             if (!changing) {
-              this._previousAttributes = _.clone(this.attributes, true); //<custom>: Replaced _.clone with _.deepClone
+              this._previousAttributes = _.clone(this.attributes, true);
               this.changed = {};
             }
             current = this.attributes, prev = this._previousAttributes;
