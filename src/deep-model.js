@@ -139,7 +139,7 @@
 
         // Return a copy of the model's `attributes` object.
         toJSON: function(options) {
-          return _.deepClone(this.attributes);
+          return _.clone(this.attributes, true);
         },
 
         // Override get
@@ -175,7 +175,7 @@
             this._changing  = true;
 
             if (!changing) {
-              this._previousAttributes = _.deepClone(this.attributes); //<custom>: Replaced _.clone with _.deepClone
+              this._previousAttributes = _.clone(this.attributes, true); //<custom>: Replaced _.clone with _.deepClone
               this.changed = {};
             }
             current = this.attributes, prev = this._previousAttributes;
@@ -309,7 +309,7 @@
         // `"change"` event.
         previousAttributes: function() {
           //<custom code>
-          return _.deepClone(this._previousAttributes);
+          return _.clone(this._previousAttributes, true);
           //</custom code>
         }
     });
