@@ -102,7 +102,10 @@
             } else {
                 //Create the child object if it doesn't exist, or isn't an object
                 if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
-                    result[field] = {};
+                    var nextField = fields[i+1];
+
+                    // create array if next field is integer, else create object
+                    result[field] = /^\d+$/.test(nextField) ? [] : {};
                 }
 
                 //Move onto the next part of the path
