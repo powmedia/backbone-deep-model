@@ -1075,6 +1075,13 @@ $(document).ready(function() {
     model.set({a: true});
   });
 
+  test("set nested array attributes", 1, function() {
+    var Model = Backbone.DeepModel.extend();
+    var model = new Model();
+    model.set('myArray.0.name', "First item in array");
+    equal(Array.isArray(model.get('myArray')), true);
+  });
+
   // reset the Model
   Backbone.Model = oldModel;
 
