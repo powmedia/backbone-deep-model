@@ -26,7 +26,7 @@
         for (var key in obj) {
             var val = obj[key];
 
-            if (val && val.constructor === Object && !_.isEmpty(val)) {
+            if (val && (val.constructor === Object || val.constructor === Array) && !_.isEmpty(val)) {
                 //Recursion for embedded objects
                 var obj2 = objToPaths(val);
 
@@ -102,7 +102,10 @@
             } else {
                 //Create the child object if it doesn't exist, or isn't an object
                 if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
-                    result[field] = {};
+                    var nextField = fields[i+1];
+
+                    // create array if next field is integer, else create object
+                    result[field] = /^\d+$/.test(nextField) ? [] : {};
                 }
 
                 //Move onto the next part of the path
