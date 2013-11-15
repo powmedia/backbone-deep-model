@@ -78,6 +78,9 @@ Contributors
 Changelog
 =========
 
+master:
+- Add supprt for arrays in nested attributes (sqren)
+
 0.11.0:
 - Trigger change events only once (restorer)
 
