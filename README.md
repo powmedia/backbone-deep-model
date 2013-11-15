@@ -78,6 +78,9 @@ Contributors
 Changelog
 =========
 
+0.11.0:
+- Trigger change events only once (restorer)
+
 0.10.4:
 - Fix #68 Model or collection in attributes are eliminated when defaults are used
 
