@@ -940,4 +940,77 @@ test('set: Trigger model change:[attribute] event for parent keys (like wildcard
         ok(triggered);
     })();
 });
+
+test("set: Trigger change events for nested keys when parent is changed to null or non-object", function() {
+    // additional events must be triggered
+    (function() {
+        var model = new Backbone.DeepModel({
+            id: 123,
+            user: {
+                type: 'Spy',
+                name: {
+                    first: 'Sterling',
+                    last: 'Archer'
+                }
+            }
+        });
+
+        var triggeredEvents = [];
+
+        model.bind('all', function(changedAttr, model, val) {
+            triggeredEvents.push(changedAttr);
+        });
+
+        model.set('user', null);
+
+        // Check callbacks ran
+        deepEqual(triggeredEvents, [
+            'change:user',
+            'change:user.type',
+            'change:user.*',
+            'change:user.name.first',
+            'change:user.name.*',
+            'change:user.name',
+            'change:user.name.last',
+            'change'
+        ]);
+    })();
+
+    // no additional events shoud be triggered
+    (function() {
+        var model = new Backbone.DeepModel({
+            id: 123,
+            user: {
+                type: 'Spy',
+                name: {
+                    first: 'Sterling',
+                    last: 'Archer'
+                }
+            }
+        });
+
+        var triggeredEvents = [];
+
+        model.bind('all', function(changedAttr, model, val) {
+            triggeredEvents.push(changedAttr);
+        });
+
+        model.set('user', {
+            type: 'Spy',
+            name: {
+                fullname: 'Sterling Archer'
+            }
+        });
+
+        // Check callbacks ran
+        deepEqual(triggeredEvents, [
+            'change:user.name.fullname',
+            'change:user.name.*',
+            'change:user.name',
+            'change:user.*',
+            'change:user',
+            'change'
+        ]);
+    })();
+});
 // - @restorer

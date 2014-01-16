@@ -208,6 +208,17 @@
               //</custom code>
             }
 
+            // + @restorer
+            var currentAttrs = objToPaths(current);
+            var prevAttrs = objToPaths(prev);
+
+            for (attr in prevAttrs) {
+              if (prevAttrs.hasOwnProperty(attr) && !currentAttrs.hasOwnProperty(attr)) {
+                  changes.push(attr);
+              }
+            }
+            // - @restorer
+
             // Trigger all relevant attribute changes.
             if (!silent) {
               if (changes.length) this._pending = true;
