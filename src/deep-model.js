@@ -213,8 +213,10 @@
             var prevAttrs = objToPaths(prev);
 
             for (attr in prevAttrs) {
-              if (prevAttrs.hasOwnProperty(attr) && !currentAttrs.hasOwnProperty(attr)) {
-                  changes.push(attr);
+              var mt = String(attr).match(/^([^.]+)\./);
+
+              if (mt && prevAttrs.hasOwnProperty(attr) && attrs.hasOwnProperty(mt[1]) && !currentAttrs.hasOwnProperty(attr)) {
+                changes.push(attr);
               }
             }
             // - @restorer

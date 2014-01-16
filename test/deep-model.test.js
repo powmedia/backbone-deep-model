@@ -1012,5 +1012,33 @@ test("set: Trigger change events for nested keys when parent is changed to null 
             'change'
         ]);
     })();
+
+    // infinitive loop check
+    (function() {
+        var model = new Backbone.DeepModel({
+            foo: 'foo',
+            bar: 'bar'
+        });
+
+        model.on('change:foo', function() {
+            model.set('bar', 'BAR');
+        });
+
+        var triggeredEvents = [];
+
+        model.bind('all', function(changedAttr, model, val) {
+            triggeredEvents.push(changedAttr);
+        });
+
+        model.clear();
+
+        // Check callbacks ran
+        deepEqual(triggeredEvents, [
+            'change:bar',
+            'change:foo',
+            'change:bar',
+            'change'
+        ]);
+    })();
 });
 // - @restorer
