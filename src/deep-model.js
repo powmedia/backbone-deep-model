@@ -51,33 +51,20 @@
      * @param {String}  Object path e.g. 'user.name'
      * @return {Mixed}
      */
-    function getNested(obj, path, return_exists) {
+    function getNested(obj, path) {
         var separator = DeepModel.keyPathSeparator;
-
         var fields = path ? path.split(separator) : [];
         var result = obj;
-        return_exists || (return_exists === false);
         for (var i = 0, n = fields.length; i < n; i++) {
-            if (return_exists && !_.has(result, fields[i])) {
-                return false;
-            }
             result = result[fields[i]];
+
+            if (typeof result === 'undefined') {
+                return result;
+            }
 
             if (result == null && i < n - 1) {
                 result = {};
             }
-
-            if (typeof result === 'undefined') {
-                if (return_exists)
-                {
-                    return true;
-                }
-                return result;
-            }
-        }
-        if (return_exists)
-        {
-            return true;
         }
         return result;
     }
