@@ -777,6 +777,15 @@ test('defaults: does not cause a problem with a collection in an attribute', fun
     ok(model.get('collection') instanceof Backbone.Collection);
 });
 
+test('toJSON: does not alter object with property "length" during deepClone', function() {
+	var Model = Backbone.DeepModel.extend({});
+	var model = new Model;
+	
+	model.set('length', 4);
+	
+	deepEqual({length: 4}, model.toJSON());
+});
+
 // + @restorer
 test("set: Trigger change events only once", function() {
     (function() {
