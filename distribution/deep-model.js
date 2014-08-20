@@ -14,7 +14,18 @@
  *
  * Based on https://gist.github.com/echong/3861963
  */
-(function(_, Backbone) {
+;(function(factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD
+        define(['underscore', 'backbone'], factory);
+    } else if (typeof exports === 'object') {
+        // CommonJS
+        module.exports = factory(require('underscore'), require('backbone'));
+    } else {
+        // globals
+        factory(_, Backbone);
+    }
+}(function(_, Backbone) {
   var arrays, basicObjects, deepClone, deepExtend, deepExtendCouple, isBasicObject,
     __slice = [].slice;
 
@@ -120,7 +131,7 @@
     deepExtend: deepExtend
   });
 
-}).call(this, _, Backbone);
+}));
 
 /**
  * Main source
