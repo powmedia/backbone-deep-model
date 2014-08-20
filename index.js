@@ -1,1 +1,1 @@
-module.exports = require('./src/deep-model');
+module.exports = require('./distribution/deep-model');
