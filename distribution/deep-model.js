@@ -1,7 +1,7 @@
 /*jshint expr:true eqnull:true */
 /**
  *
- * Backbone.DeepModel v0.10.4
+ * Backbone.DeepModel v0.11.0
  *
  * Copyright (c) 2013 Charles Davison, Pow Media Ltd
  *
@@ -14,7 +14,18 @@
  *
  * Based on https://gist.github.com/echong/3861963
  */
-(function() {
+;(function(factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD
+        define(['underscore', 'backbone'], factory);
+    } else if (typeof exports === 'object') {
+        // CommonJS
+        module.exports = factory(require('underscore'), require('backbone'));
+    } else {
+        // globals
+        factory(_, Backbone);
+    }
+}(function(_, Backbone) {
   var arrays, basicObjects, deepClone, deepExtend, deepExtendCouple, isBasicObject,
     __slice = [].slice;
 
@@ -24,6 +35,9 @@
       return obj;
     }
     if (obj instanceof Backbone.Collection || obj instanceof Backbone.Model) {
+      return obj;
+    }
+    if (_.isElement(obj)) {
       return obj;
     }
     if (_.isDate(obj)) {
@@ -117,7 +131,7 @@
     deepExtend: deepExtend
   });
 
-}).call(this);
+}));
 
 /**
  * Main source
@@ -127,12 +141,15 @@
     if (typeof define === 'function' && define.amd) {
         // AMD
         define(['underscore', 'backbone'], factory);
+    } else if (typeof exports === 'object') {
+        // CommonJS
+        module.exports = factory(require('underscore'), require('backbone'));
     } else {
         // globals
         factory(_, Backbone);
     }
 }(function(_, Backbone) {
-    
+
     /**
      * Takes a nested object and returns a shallow object keyed with the path names
      * e.g. { "level1.level2": "value" }
@@ -147,7 +164,7 @@
         for (var key in obj) {
             var val = obj[key];
 
-            if (val && val.constructor === Object && !_.isEmpty(val)) {
+            if (val && (val.constructor === Object || val.constructor === Array) && !_.isEmpty(val)) {
                 //Recursion for embedded objects
                 var obj2 = objToPaths(val);
 
@@ -172,7 +189,7 @@
     function getNested(obj, path, return_exists) {
         var separator = DeepModel.keyPathSeparator;
 
-        var fields = path.split(separator);
+        var fields = path ? path.split(separator) : [];
         var result = obj;
         return_exists || (return_exists === false);
         for (var i = 0, n = fields.length; i < n; i++) {
@@ -184,7 +201,7 @@
             if (result == null && i < n - 1) {
                 result = {};
             }
-            
+
             if (typeof result === 'undefined') {
                 if (return_exists)
                 {
@@ -212,7 +229,7 @@
 
         var separator = DeepModel.keyPathSeparator;
 
-        var fields = path.split(separator);
+        var fields = path ? path.split(separator) : [];
         var result = obj;
         for (var i = 0, n = fields.length; i < n && result !== undefined ; i++) {
             var field = fields[i];
@@ -223,7 +240,10 @@
             } else {
                 //Create the child object if it doesn't exist, or isn't an object
                 if (typeof result[field] === 'undefined' || ! _.isObject(result[field])) {
-                    result[field] = {};
+                    var nextField = fields[i+1];
+
+                    // create array if next field is integer, else create object
+                    result[field] = /^\d+$/.test(nextField) ? [] : {};
                 }
 
                 //Move onto the next part of the path
@@ -274,7 +294,7 @@
         set: function(key, val, options) {
             var attr, attrs, unset, changes, silent, changing, prev, current;
             if (key == null) return this;
-            
+
             // Handle both `"key", value` and `{key: value}` -style arguments.
             if (typeof key === 'object') {
               attrs = key;
@@ -284,7 +304,7 @@
             }
 
             options || (options = {});
-            
+
             // Run validation.
             if (!this._validate(attrs, options)) return false;
 
@@ -329,11 +349,15 @@
 
               //<custom code>
               var separator = DeepModel.keyPathSeparator;
+              var alreadyTriggered = {}; // * @restorer
 
               for (var i = 0, l = changes.length; i < l; i++) {
                 var key = changes[i];
 
-                this.trigger('change:' + key, this, getNested(current, key), options);
+                if (!alreadyTriggered.hasOwnProperty(key) || !alreadyTriggered[key]) { // * @restorer
+                  alreadyTriggered[key] = true; // * @restorer
+                  this.trigger('change:' + key, this, getNested(current, key), options);
+                } // * @restorer
 
                 var fields = key.split(separator);
 
@@ -342,7 +366,17 @@
                   var parentKey = _.first(fields, n).join(separator),
                       wildcardKey = parentKey + separator + '*';
 
-                  this.trigger('change:' + wildcardKey, this, getNested(current, parentKey), options);
+                  if (!alreadyTriggered.hasOwnProperty(wildcardKey) || !alreadyTriggered[wildcardKey]) { // * @restorer
+                    alreadyTriggered[wildcardKey] = true; // * @restorer
+                    this.trigger('change:' + wildcardKey, this, getNested(current, parentKey), options);
+                  } // * @restorer
+
+                  // + @restorer
+                  if (!alreadyTriggered.hasOwnProperty(parentKey) || !alreadyTriggered[parentKey]) {
+                    alreadyTriggered[parentKey] = true;
+                    this.trigger('change:' + parentKey, this, getNested(current, parentKey), options);
+                  }
+                  // - @restorer
                 }
                 //</custom code>
               }
@@ -388,7 +422,7 @@
           //</custom code>
 
           var old = this._changing ? this._previousAttributes : this.attributes;
-          
+
           //<custom code>
           diff = objToPaths(diff);
           old = objToPaths(old);
@@ -431,7 +465,7 @@
 
     //For use in NodeJS
     if (typeof module != 'undefined') module.exports = DeepModel;
-    
+
     return Backbone;
 
 }));
