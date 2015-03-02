@@ -940,4 +940,122 @@ test('set: Trigger model change:[attribute] event for parent keys (like wildcard
         ok(triggered);
     })();
 });
+
+
+test('set: calls setters on backbone object rather than changing object directly when passed object literal', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'value';
+    model.set({ nested: new Backbone.DeepModel() });
+
+    model.set({ nested: { property: value }});
+
+    ok(model.get('nested') instanceof Backbone.DeepModel);
+    ok(_.isUndefined(model.get('nested').property));
+    strictEqual(model.get('nested').get('property'), value);
+});
+
+test('set: calls setters on backbone object rather than changing object directly when passed dot notated string', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'value';
+    model.set({ nested: new Backbone.DeepModel() });
+
+    model.set('nested.property', value);
+
+    ok(model.get('nested') instanceof Backbone.DeepModel);
+    ok(_.isUndefined(model.get('nested').property), 'property is not set on model object itself');
+    strictEqual(model.get('nested').get('property'), value, 'property is set on models attributes');
+});
+
+test('set: calls set method on backbone object rather than changing attributes hash directly', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'value';
+    var setCalled = false;
+    var CustomModel = Backbone.DeepModel.extend({
+        set: function () {
+            setCalled = true;
+        }
+    });
+    model.set('nested', new CustomModel());
+
+    model.set('nested.property', value);
+
+    ok(setCalled, 'set function called on nested object rather than modifying attributes directly');
+});
+
+test('set: silent param propagated to nested models set options with expanded syntax', function() {
+    var model = new Backbone.DeepModel();
+    var setCalledWithSilent = false;
+    var CustomModel = Backbone.DeepModel.extend({
+        set: function (key, val, options) {
+            setCalledWithSilent = options && options.silent;
+        }
+    });
+    model.set('nested', new CustomModel());
+
+    model.set('nested.property', 'value', { silent: true });
+
+    strictEqual(setCalledWithSilent, true, 'set function called on nested object with silent attribute passed');
+});
+
+test('get: calls getters on backbone object rather than accessing object directly', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'value';
+
+    model.set({ nested: new Backbone.DeepModel({ property: value }) });
+
+    strictEqual(model.get('nested.property'), value);
+});
+
+test('get: calls get method on backbone object rather than accessing attributes hash', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'value';
+    var getCalled = false;
+    var CustomModel = Backbone.DeepModel.extend({
+        get: function () {
+            getCalled = true;
+        }
+    });
+    model.set({ nested: new CustomModel() });
+
+    model.get('nested.property');
+
+    ok(getCalled, 'get function called on nested object rather than accessing attributes directly');
+});
+
+test('get: supports retrieving multi-tier nested models', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'happy';
+    model.set({ 
+        one: new Backbone.DeepModel({
+            two: new Backbone.DeepModel({
+                three: new Backbone.DeepModel({
+                    property: value
+                })
+            })
+        })
+    });
+
+    strictEqual(model.get('one.two.three.property'), value, 'property on nested models is set appropriately');
+    strictEqual(model.get('one').get('two').get('three').get('property'), value, 'property is set on models attributes not on the object');
+});
+
+test('set: supports setting multi-tier nested models', function() {
+    var model = new Backbone.DeepModel();
+    var value = 'happy';
+    model.set({ 
+        one: new Backbone.DeepModel({
+            two: new Backbone.DeepModel({
+                three: new Backbone.DeepModel({
+                    property: 'sad'
+                })
+            })
+        })
+    });
+
+    model.set('one.two.three.property', value);
+
+    strictEqual(model.get('one.two.three.property'), value, 'property on nested models changed');
+    strictEqual(model.get('one').get('two').get('three').get('property'), value, 'property is set on models attributes not on the object');
+});
+
 // - @restorer
