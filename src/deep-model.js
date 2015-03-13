@@ -128,10 +128,11 @@
         constructor: function(attributes, options) {
             var defaults;
             var attrs = attributes || {};
+            options || (options = {});
             this.cid = _.uniqueId('c');
             this.attributes = {};
-            if (options && options.collection) this.collection = options.collection;
-            if (options && options.parse) attrs = this.parse(attrs, options) || {};
+            _.extend(this, _.pick(options, ['url', 'urlRoot', 'collection']));
+            if (options.parse) attrs = this.parse(attrs, options) || {};
             if (defaults = _.result(this, 'defaults')) {
                 //<custom code>
                 // Replaced the call to _.defaults with _.deepExtend.
