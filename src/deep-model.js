@@ -208,6 +208,19 @@
               //</custom code>
             }
 
+            // + @restorer
+            var currentAttrs = objToPaths(current);
+            var prevAttrs = objToPaths(prev);
+
+            for (attr in prevAttrs) {
+              var mt = String(attr).match(/^([^.]+)\./);
+
+              if (mt && prevAttrs.hasOwnProperty(attr) && attrs.hasOwnProperty(mt[1]) && !currentAttrs.hasOwnProperty(attr)) {
+                changes.push(attr);
+              }
+            }
+            // - @restorer
+
             // Trigger all relevant attribute changes.
             if (!silent) {
               if (changes.length) this._pending = true;
