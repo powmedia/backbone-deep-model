@@ -941,3 +941,16 @@ test('set: Trigger model change:[attribute] event for parent keys (like wildcard
     })();
 });
 // - @restorer
+
+
+test("toFlatJSON: Returns a flat representation of the model (deep properties are returned as dotted paths)", function() {
+    var model = create();
+
+    deepEqual(model.toFlatJSON(), {
+        id: 123,
+        'user.type': 'Spy',
+        'user.name.first': 'Sterling',
+        'user.name.last': 'Archer'
+    });
+
+});
