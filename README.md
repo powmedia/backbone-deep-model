@@ -52,7 +52,7 @@ Example code:
     model.bind('change:user.*', function() {});
     
     //Use set with a path name for nested attributes
-    //NOTE you must you quotation marks around the key name when using a path
+    //NOTE: You need quotation marks around the key name when using a path
     model.set({
         'user.name.first': 'Lana',
         'user.name.last':  'Kang'
