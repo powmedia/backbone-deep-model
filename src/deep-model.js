@@ -6,9 +6,12 @@
     if (typeof define === 'function' && define.amd) {
         // AMD
         define(['underscore', 'backbone'], factory);
-    } else if (typeof exports === 'object') {
+    } else if (typeof module !== 'undefined' && module.exports) {
         // CommonJS
-        module.exports = factory(require('underscore'), require('backbone'));
+        module.exports = factory(
+            require('underscore'),
+            require('backbone')
+        );
     } else {
         // globals
         factory(_, Backbone);
