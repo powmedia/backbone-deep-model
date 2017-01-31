@@ -38,6 +38,15 @@
 
                     ret[key + separator + key2] = val2;
                 }
+    	    } else if (val && _.isArray(val) && val.length > 0) {
+		// Recursion for embedded arrays
+		for (var idx in val) {
+		    var obj2 = objToPaths(val[idx]);
+		    for (var key2 in obj2) {
+			var val2 = obj2[key2];
+			ret[key + separator + idx + separator + key2] = val2;
+		    }
+		}
             } else {
                 ret[key] = val;
             }

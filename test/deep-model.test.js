@@ -240,6 +240,46 @@ test("set: Triggers model change:[attribute] events", function() {
         ok(triggered2);
     })();
 
+    //Check attributes on object in array generate change events
+    (function() {
+        var model = create();
+
+        var triggered1 = triggered2 = false;
+
+        model.set({
+			'users': 
+				[
+					{'name': 
+						{
+							'first': 'Lana',
+							'last': 'Kang'
+						}
+					}
+				]
+        });
+
+        model.on('change:users.0.name.first', function(model, val) {
+            equal(val, 'Chuck');
+
+            triggered1 = true;
+        });
+
+        model.bind('change:users.0.name.last', function(model, val) {
+            equal(val, 'Norris');
+
+            triggered2 = true;
+        });
+
+        model.set({
+            'users.0.name.first': 'Chuck',
+            'users.0.name.last':  'Norris'
+        });
+
+        //Check callbacks ran
+        ok(triggered1);
+        ok(triggered2);
+    })();
+
 
     //Check only expected change events are running
     (function() {
