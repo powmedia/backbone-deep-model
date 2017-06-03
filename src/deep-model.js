@@ -61,6 +61,9 @@
             if (return_exists && !_.has(result, fields[i])) {
                 return false;
             }
+            if (typeof result === 'undefined') {
+              result = {};
+            }
             result = result[fields[i]];
 
             if (result == null && i < n - 1) {
