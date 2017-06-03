@@ -684,6 +684,23 @@ test('changedAttributes(diff): with deep properties', function() {
     deepEqual(deepModel.changedAttributes(diff), false);
 });
 
+test('changedAttributes(diff): with deep properties defined as a top-level object', function() {
+    var deepModel = new Backbone.DeepModel({
+        foo: { baz: 1 }, 
+        bar: { baz: 1 }
+    });
+
+    var diff = { 'foo': {'baz': 1, 'bar': 2} };
+
+    deepEqual(deepModel.changedAttributes(diff), {'foo.bar': 2});
+
+    deepModel.set({'foo.baz': 1, 'foo.bar': 2});
+    deepEqual(deepModel.changedAttributes(diff), false);
+
+    deepEqual(diff, { 'foo': {'baz': 1, 'bar': 2} }, 'diff is not changed');
+
+});
+
 
 test('hasChanged(): behaves as Model for top level attributes', function() {
     var model = new Backbone.Model({test:1}),
